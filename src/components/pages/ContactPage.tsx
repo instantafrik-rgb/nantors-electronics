@@ -97,8 +97,7 @@ export const ContactPage: React.FC = () => {
           </h1>
           <p className="text-sm text-[#888888] leading-relaxed font-light">
             Une question sur un produit, un besoin de vérification de
-            compatibilité ou une commande urgente ? Notre équipe vous répond
-            immédiatement.
+            compatibilité ou une commande urgente ? Notre équipe vous accompagne pour vos questions et commandes.
           </p>
         </div>
 
@@ -197,8 +196,7 @@ export const ContactPage: React.FC = () => {
               Envoyez-nous un message direct
             </h3>
             <p className="text-xs text-[#888888] mb-6 font-light">
-              Remplissez ce formulaire et notre conseiller vous contactera sans
-              délai pour confirmer votre commande ou vos questions.
+              Remplissez ce formulaire et notre conseiller vous contactera pour confirmer les modalités de votre commande ou répondre à vos questions.
             </p>
 
             {submissionStatus === "opened" && (
