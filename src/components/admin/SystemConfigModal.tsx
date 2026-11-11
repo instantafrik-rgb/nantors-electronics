@@ -113,7 +113,7 @@ export const SystemConfigModal: React.FC<SystemConfigModalProps> = ({
                 </div>
                 <p className="text-[11px] text-[#888888] font-light">
                   {fbConfigured
-                    ? 'Connecté directement à la base Firestore en ligne.'
+                    ? 'Variables Firebase détectées. La connexion réelle dépend aussi des règles et de l'accès au projet.'
                     : 'En attente de la clé API Firebase dans .env.'}
                 </p>
               </button>
@@ -128,7 +128,7 @@ export const SystemConfigModal: React.FC<SystemConfigModalProps> = ({
                 Firebase (Firestore & Auth)
               </span>
               <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-[#FF6B00]/10 text-[#FF6B00] border border-[#FF6B00]/20">
-                {fbConfigured ? 'Prêt & Configuré' : 'Prêt à être activé'}
+                {fbConfigured ? 'Variables présentes · test requis' : 'Configuration à compléter'}
               </span>
             </div>
 
