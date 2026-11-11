@@ -149,7 +149,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </span>
               </div>
               <p className="text-xs text-slate-500 font-mono mt-0.5">
-                {currentUser.email} · {productService.getDataSource() === 'firebase' ? 'Base Firestore' : 'Stockage Local Sécurisé'}
+                {currentUser.email} · {productService.getDataSource() === 'firebase' ? 'Firestore sélectionné' : 'Mode local · non synchronisé'}
               </p>
             </div>
           </div>
@@ -190,6 +190,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <button onClick={() => setNotification(null)} className="text-slate-500 hover:text-[#101828] cursor-pointer">
               <XCircle className="w-4 h-4" />
             </button>
+          </div>
+        )}
+
+        {productService.getDataSource() === 'local' && (
+          <div role="alert" className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+            <strong className="block font-semibold">Mode local actif — données non synchronisées</strong>
+            <span className="mt-1 block text-amber-800">Les changements effectués ici restent dans ce navigateur et ne seront pas visibles sur vos autres appareils. Configurez Firebase puis sélectionnez Firestore dans « Statut Système & Clés » avant toute gestion réelle des commandes et du stock.</span>
           </div>
         )}
 
