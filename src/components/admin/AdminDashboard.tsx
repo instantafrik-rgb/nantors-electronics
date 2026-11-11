@@ -23,6 +23,7 @@ import { formatFCFA } from '../../utils/formatters';
 import { productService } from '../../services/productService';
 import { authService } from '../../services/authService';
 import { OrdersPanel } from './OrdersPanel';
+import { CategoriesPanel } from './CategoriesPanel';
 
 interface AdminDashboardProps {
   products: Product[];
@@ -41,7 +42,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onOpenProductDetails,
   onExitAdmin,
 }) => {
-  const [activeTab, setActiveTab] = useState<'products' | 'orders'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'categories'>('products');
   const [search, setSearch] = useState('');
   const [selectedCat, setSelectedCat] = useState('all');
   const [formModalOpen, setFormModalOpen] = useState(false);
@@ -203,10 +204,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         <nav className="flex flex-wrap gap-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm" aria-label="Navigation administration">
           <button onClick={() => setActiveTab('products')} className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${activeTab === 'products' ? 'bg-[#1769FF] text-white' : 'text-slate-600 hover:bg-slate-100'}`}>Produits</button>
           <button onClick={() => setActiveTab('orders')} className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${activeTab === 'orders' ? 'bg-[#1769FF] text-white' : 'text-slate-600 hover:bg-slate-100'}`}>Commandes</button>
+          <button onClick={() => setActiveTab('categories')} className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${activeTab === 'categories' ? 'bg-[#1769FF] text-white' : 'text-slate-600 hover:bg-slate-100'}`}>Catégories</button>
         </nav>
 
         {activeTab === 'orders' ? (
           <OrdersPanel products={products} onRefreshProducts={onRefreshData} />
+        ) : activeTab === 'categories' ? (
+          <CategoriesPanel categories={categories} products={products} onRefresh={onRefreshData} />
         ) : (
           <>
         {/* 4 Stats Cards in CASE editorial style */}
