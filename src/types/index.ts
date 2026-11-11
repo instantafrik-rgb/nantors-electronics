@@ -59,3 +59,32 @@ export interface CatalogFilter {
   priceRange: PriceRangeOption;
   inStockOnly: boolean;
 }
+
+export type OrderSource = "website" | "whatsapp" | "admin";
+export type OrderStatus = "pending_confirmation" | "confirmed" | "preparing" | "out_for_delivery" | "delivered" | "cancelled";
+export type PaymentStatus = "unpaid" | "paid_on_delivery";
+export interface OrderItem {
+  productId: string;
+  productName: string;
+  unitPrice: number;
+  quantity: number;
+}
+export interface CustomerOrder {
+  id: string;
+  orderNumber: string;
+  source: OrderSource;
+  customerName: string;
+  customerPhone: string;
+  city: string;
+  address: string;
+  items: OrderItem[];
+  subtotal: number;
+  deliveryFee: number | null;
+  total: number | null;
+  status: OrderStatus;
+  paymentStatus: PaymentStatus;
+  paymentMethod: "cash_on_delivery";
+  notes: string;
+  createdAt: string;
+  updatedAt: string;
+}
