@@ -38,12 +38,12 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
   const [specKeys, setSpecKeys] = useState<string[]>([
     "Puissance",
     "Matériau",
-    "Garantie",
+    "Compatibilité",
   ]);
   const [specVals, setSpecVals] = useState<string[]>([
     "65W",
     "Aluminium",
-    "12 mois",
+    "À préciser",
   ]);
   const [featured, setFeatured] = useState(false);
   const [isAvailable, setIsAvailable] = useState(false);
