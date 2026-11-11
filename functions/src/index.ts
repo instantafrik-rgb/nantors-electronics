@@ -19,6 +19,10 @@ export const createWebsiteOrder = onCall(
   async (request) => {
     const customerName = requiredText(request.data?.customerName, "nom", 120);
     const customerPhone = requiredText(request.data?.customerPhone, "téléphone", 30);
+    const phoneDigits = customerPhone.replace(/\\D/g, "");
+    if (phoneDigits.length < 8 || phoneDigits.length > 15) {
+      throw new HttpsError("invalid-argument", "Le numéro de téléphone est invalide.");
+    }
     const city = requiredText(request.data?.city, "ville ou quartier", 120);
     const address = typeof request.data?.address === "string" ? request.data.address.trim().slice(0, 300) : "";
     const notes = typeof request.data?.notes === "string" ? request.data.notes.trim().slice(0, 1000) : "";
