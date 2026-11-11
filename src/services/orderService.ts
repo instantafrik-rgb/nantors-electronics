@@ -27,14 +27,31 @@ export const orderService = {
     if (input.items.some((item) => !Number.isInteger(item.quantity) || item.quantity < 1 || item.unitPrice < 0)) {
       throw new Error("Un article contient un prix ou une quantité invalide.");
     }
-    const { addDoc, collection } = await import("firebase/firestore");
-    const subtotal = input.items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
+    const { collection, doc, getDoc, runTransaction } = await import("firebase/firestore");
+    const normalizedItems: OrderItem[] = [];
+    for (const item of input.items) {
+      const productSnapshot = await getDoc(doc(db, "products", item.productId));
+      if (!productSnapshot.exists()) throw new Error("Produit introuvable : " + item.productName);
+      const product = productSnapshot.data();
+      if (product.isAvailable !== true) throw new Error("Produit indisponible : " + product.name);
+      normalizedItems.push({
+        productId: item.productId,
+        productName: String(product.name),
+        unitPrice: Number(product.price),
+        quantity: item.quantity
+      });
+    }
+    const subtotal = normalizedItems.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
     const now = new Date().toISOString();
-    await addDoc(collection(db, "orders"), {
-      ...input, orderNumber: "NE-" + Date.now().toString().slice(-8),
-      subtotal, deliveryFee: null, total: null,
-      status: "pending_confirmation", paymentStatus: "unpaid",
-      paymentMethod: "cash_on_delivery", createdAt: now, updatedAt: now
+    const orderRef = doc(collection(db, "orders"));
+    await runTransaction(db, async (transaction) => {
+      transaction.set(orderRef, {
+        ...input, items: normalizedItems,
+        orderNumber: "NE-" + orderRef.id.slice(-8).toUpperCase(),
+        subtotal, deliveryFee: null, total: null,
+        status: "pending_confirmation", paymentStatus: "unpaid",
+        paymentMethod: "cash_on_delivery", createdAt: now, updatedAt: now
+      });
     });
   },
 
@@ -59,6 +76,18 @@ export const orderService = {
       if (!orderSnapshot.exists()) throw new Error("Commande introuvable.");
       const order = orderSnapshot.data() as CustomerOrder;
       if (order.status === status) return;
+
+      const allowedNextStatuses: Record<OrderStatus, OrderStatus[]> = {
+        pending_confirmation: ["confirmed", "cancelled"],
+        confirmed: ["preparing", "cancelled"],
+        preparing: ["out_for_delivery", "cancelled"],
+        out_for_delivery: ["delivered", "cancelled"],
+        delivered: [],
+        cancelled: []
+      };
+      if (!allowedNextStatuses[order.status]?.includes(status)) {
+        throw new Error("Transition de statut non autorisée : " + order.status + " → " + status);
+      }
 
       if (status === "confirmed" && order.status === "pending_confirmation") {
         if (order.deliveryFee === null) throw new Error("Ajoutez les frais de livraison avant de confirmer.");
