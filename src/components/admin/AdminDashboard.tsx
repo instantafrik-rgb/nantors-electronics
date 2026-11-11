@@ -27,6 +27,7 @@ import { CategoriesPanel } from './CategoriesPanel';
 import { InventoryPanel } from './InventoryPanel';
 import { CustomersPanel } from './CustomersPanel';
 import { AnalyticsPanel } from './AnalyticsPanel';
+import { OverviewPanel } from './OverviewPanel';
 
 interface AdminDashboardProps {
   products: Product[];
@@ -45,7 +46,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onOpenProductDetails,
   onExitAdmin,
 }) => {
-  const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'categories' | 'inventory' | 'customers' | 'analytics'>('products');
+  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'categories' | 'inventory' | 'customers' | 'analytics'>('overview');
   const [search, setSearch] = useState('');
   const [selectedCat, setSelectedCat] = useState('all');
   const [formModalOpen, setFormModalOpen] = useState(false);
@@ -205,6 +206,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         )}
 
         <nav className="flex flex-wrap gap-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm" aria-label="Navigation administration">
+          <button onClick={() => setActiveTab('overview')} className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${activeTab === 'overview' ? 'bg-[#1769FF] text-white' : 'text-slate-600 hover:bg-slate-100'}`}>Vue d'ensemble</button>
           <button onClick={() => setActiveTab('products')} className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${activeTab === 'products' ? 'bg-[#1769FF] text-white' : 'text-slate-600 hover:bg-slate-100'}`}>Produits</button>
           <button onClick={() => setActiveTab('orders')} className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${activeTab === 'orders' ? 'bg-[#1769FF] text-white' : 'text-slate-600 hover:bg-slate-100'}`}>Commandes</button>
           <button onClick={() => setActiveTab('categories')} className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${activeTab === 'categories' ? 'bg-[#1769FF] text-white' : 'text-slate-600 hover:bg-slate-100'}`}>Catégories</button>
@@ -223,6 +225,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <CustomersPanel />
         ) : activeTab === 'analytics' ? (
           <AnalyticsPanel />
+        ) : activeTab === 'overview' ? (
+          <OverviewPanel products={products} />
         ) : (
           <>
         {/* 4 Stats Cards in CASE editorial style */}
