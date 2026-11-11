@@ -20,11 +20,10 @@ import {
 } from 'lucide-react';
 import { Product } from '../../types';
 import { orderService } from '../../services/orderService';
-import { isWhatsAppConfigured } from '../../utils/formatters';
 import {
   formatFCFA,
-  generateWhatsAppOrderUrl,
   generateWhatsAppProductQuestionUrl,
+  isWhatsAppConfigured,
 } from '../../utils/formatters';
 
 interface ProductDetailModalProps {
@@ -64,7 +63,6 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
   // 2. Real price & quantity calculation
   const totalPrice = product.price * quantity;
-  const whatsappOrderUrl = generateWhatsAppOrderUrl(product, customDeliveryNote, quantity);
   // 3. Question WhatsApp
   const whatsappQuestionUrl = generateWhatsAppProductQuestionUrl(product);
 
