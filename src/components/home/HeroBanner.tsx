@@ -50,7 +50,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
 
             {/* Main Headline (CASE editorial style: imposing, sophisticated, balanced) */}
             <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.08] [text-wrap:balance]">
-              La puissance et la précision de vos accessoires{" "}
+              Les bons accessoires pour accompagner votre quotidien{" "}
               <span className="text-[#1769FF]">high-tech</span>.
             </h1>
 
@@ -112,7 +112,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
 
           {/* Right Column: High-Fidelity Studio Photo Showcase (5 cols) */}
           <div className="lg:col-span-5 relative">
-            <div className="relative mx-auto max-w-md lg:max-w-none rounded-3xl overflow-hidden bg-white border border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
+            <div className="relative mx-auto max-w-md lg:max-w-none rounded-3xl overflow-hidden bg-white border border-slate-200 shadow-[0_20px_50px_rgba(15,23,42,0.12)]">
               {/* Image avec son ratio natif */}
               <div className="aspect-[1199/630] relative bg-white">
                 <img
@@ -142,7 +142,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                       Sélection Signature Togo
                     </span>
                     <h3 className="font-display font-semibold text-sm text-slate-900 mt-0.5 group-hover/card:text-[#1769FF] transition-colors truncate">
-                      Collection Pro GaN, MagSafe & Hubs
+                      Accessoires pour smartphones & informatique
                     </h3>
                   </div>
                   {minPrice && minPrice > 0 ? (
@@ -151,7 +151,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                     </span>
                   ) : (
                     <span className="font-mono text-xs font-bold bg-[#1769FF] text-white px-2.5 py-1 rounded-lg shadow-sm shrink-0">
-                      Collection Certifiée
+                      Voir le catalogue
                     </span>
                   )}
                 </div>
