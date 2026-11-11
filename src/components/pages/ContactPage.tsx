@@ -74,11 +74,11 @@ export const ContactPage: React.FC = () => {
     },
     {
       q: "Quels sont les délais de livraison au Togo ?",
-      a: "Pour la zone urbaine de Lomé (Agoè, Hédzranawoé, Tokoin, Bè, etc.), la livraison s'effectue sous 24h à 48h ouvrées. Pour les expéditions en région (Kara, Sokodé, Kpalimé, Atakpamé...), nos conseillers vous indiquent le créneau exact lors de l'échange WhatsApp.",
+      a: "Les délais dépendent de votre quartier ou de votre ville et de la disponibilité du produit. Notre équipe vous confirme les modalités et le créneau avant validation.",
     },
     {
-      q: "Comment faire jouer la garantie 12 mois en cas de souci ?",
-      a: "Chaque article vendu chez Nantor's Electronics bénéficie d'une garantie constructeur de 12 mois. En cas de dysfonctionnement technique (non imputable à une casse physique ou immersion liquide), contactez notre numéro WhatsApp pour bénéficier d'un échange immédiat à notre showroom de Lomé.",
+      q: "Quelles sont les conditions de garantie ?",
+      a: "Les conditions de garantie peuvent varier selon le produit. Elles sont précisées par notre équipe avant la confirmation de la commande.",
     },
   ];
 
@@ -117,7 +117,7 @@ export const ContactPage: React.FC = () => {
                 </h3>
                 <p className="text-xs text-[#888888] mt-1 leading-relaxed font-light">
                   Le moyen le plus rapide d'obtenir une réponse ou de passer
-                  commande avec prise en charge instantanée au Togo.
+                  commande avec échange direct avec notre équipe.
                 </p>
               </div>
 
