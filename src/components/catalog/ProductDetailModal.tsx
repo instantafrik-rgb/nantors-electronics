@@ -19,6 +19,8 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { Product } from '../../types';
+import { orderService } from '../../services/orderService';
+import { isWhatsAppConfigured } from '../../utils/formatters';
 import {
   formatFCFA,
   generateWhatsAppOrderUrl,
@@ -46,6 +48,13 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [customerCity, setCustomerCity] = useState('');
+  const [customerAddress, setCustomerAddress] = useState('');
+  const [orderBusy, setOrderBusy] = useState(false);
+  const [orderError, setOrderError] = useState('');
 
   const images = product.images && product.images.length > 0
     ? product.images
@@ -88,6 +97,34 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
       handlePrevImage();
     }
     setTouchStartX(null);
+  };
+
+  const handleWebsiteOrder = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!product || !product.isAvailable) return;
+    if (!isWhatsAppConfigured()) {
+      setOrderError("Le numéro WhatsApp commercial doit être configuré avant l'activation des commandes en ligne.");
+      return;
+    }
+    setOrderBusy(true);
+    setOrderError('');
+    try {
+      const created = await orderService.createWebsite({
+        customerName,
+        customerPhone,
+        city: customerCity,
+        address: customerAddress,
+        notes: customDeliveryNote,
+        items: [{ productId: product.id, quantity }]
+      });
+      const details = `Commande ${created.orderNumber} · Client : ${customerName} · Téléphone : ${customerPhone} · Ville/quartier : ${customerCity} · Adresse : ${customerAddress} · ${customDeliveryNote}`;
+      const messageUrl = generateWhatsAppOrderUrl(product, details, quantity);
+      window.location.assign(messageUrl);
+    } catch (error) {
+      setOrderError(error instanceof Error ? error.message : "Impossible d'enregistrer votre commande. Réessayez ou contactez-nous sur WhatsApp.");
+    } finally {
+      setOrderBusy(false);
+    }
   };
 
   const handleCopyLink = () => {
@@ -411,21 +448,30 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             {/* Desktop Action Module */}
             <div className="mt-6 pt-5 border-t border-white/10 space-y-2.5">
               {/* WhatsApp Primary Order CTA in Official Orange #FF6B00 */}
-              <a
-                href={whatsappOrderUrl}
-                target={whatsappOrderUrl.startsWith('#') ? undefined : '_blank'}
-                rel={whatsappOrderUrl.startsWith('#') ? undefined : 'noopener noreferrer'}
-                className={`w-full py-3.5 px-6 rounded-xl font-bold text-sm flex items-center justify-center gap-2.5 shadow-[0_2px_15px_rgba(255,107,0,0.3)] transition-all duration-200 ${
+              <button
+                type="button"
+                onClick={() => { setCheckoutOpen(v => !v); setOrderError(''); }}
+                disabled={!product.isAvailable}
+                className={`w-full py-3.5 px-6 rounded-xl font-bold text-sm flex items-center justify-center gap-2.5 shadow-[0_2px_15px_rgba(23,105,255,0.18)] transition-all duration-200 ${
                   product.isAvailable
-                    ? 'bg-[#FF6B00] hover:bg-[#e05f00] text-[#111111] active:scale-98 cursor-pointer'
-                    : 'bg-[#222222] text-[#666666] cursor-not-allowed pointer-events-none'
+                    ? 'bg-[#1769FF] hover:bg-[#0f56d9] text-white active:scale-98 cursor-pointer'
+                    : 'bg-slate-100 text-slate-400 cursor-not-allowed'
                 }`}
               >
-                <MessageSquare className="w-5 h-5 fill-[#111111] stroke-none" />
-                <span>
-                  Commander sur WhatsApp {quantity > 1 ? `(${quantity}x - ${formatFCFA(totalPrice)})` : ''}
-                </span>
-              </a>
+                <MessageSquare className="w-5 h-5" />
+                <span>{checkoutOpen ? 'Fermer le formulaire' : `Commander sur WhatsApp ${quantity > 1 ? `(${quantity}x - ${formatFCFA(totalPrice)})` : ''}`}</span>
+              </button>
+              {checkoutOpen && (
+                <form onSubmit={handleWebsiteOrder} className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 text-slate-900">
+                  <div><h4 className="font-semibold text-sm">Vos coordonnées de livraison</h4><p className="mt-1 text-xs text-slate-500">Votre demande sera enregistrée comme « À confirmer ». L'ouverture de WhatsApp ne confirme pas la commande.</p></div>
+                  {orderError && <p role="alert" className="rounded-lg bg-red-50 p-2 text-xs text-red-700">{orderError}</p>}
+                  <input required minLength={2} maxLength={120} value={customerName} onChange={e=>setCustomerName(e.target.value)} placeholder="Nom complet *" className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm"/>
+                  <input required minLength={5} maxLength={30} value={customerPhone} onChange={e=>setCustomerPhone(e.target.value)} placeholder="Téléphone *" type="tel" className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm"/>
+                  <input required minLength={2} maxLength={120} value={customerCity} onChange={e=>setCustomerCity(e.target.value)} placeholder="Ville / quartier *" className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm"/>
+                  <input maxLength={300} value={customerAddress} onChange={e=>setCustomerAddress(e.target.value)} placeholder="Adresse / repère (facultatif)" className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm"/>
+                  <button disabled={orderBusy} type="submit" className="w-full rounded-xl bg-[#1769FF] px-4 py-3 text-sm font-bold text-white disabled:opacity-50">{orderBusy ? "Enregistrement…" : "Enregistrer et ouvrir WhatsApp"}</button>
+                </form>
+              )}
 
               {/* 3. Question WhatsApp secondary button */}
               <a
@@ -467,19 +513,15 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             </span>
           </div>
 
-          <a
-            href={whatsappOrderUrl}
-            target={whatsappOrderUrl.startsWith('#') ? undefined : '_blank'}
-            rel={whatsappOrderUrl.startsWith('#') ? undefined : 'noopener noreferrer'}
-            className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs transition-all shadow-[0_2px_15px_rgba(255,107,0,0.3)] active:scale-95 ${
-              product.isAvailable
-                ? 'bg-[#FF6B00] text-[#111111] hover:bg-[#e05f00]'
-                : 'bg-[#222222] text-[#666666] pointer-events-none'
-            }`}
+          <button
+            type="button"
+            onClick={() => { setCheckoutOpen(true); setOrderError(''); }}
+            disabled={!product.isAvailable}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#1769FF] px-4 py-2.5 text-xs font-bold text-white disabled:opacity-40"
           >
-            <MessageSquare className="w-4 h-4 fill-[#111111] stroke-none" />
-            <span>Commander sur WhatsApp</span>
-          </a>
+            <MessageSquare className="h-4 w-4" />
+            <span>Commander</span>
+          </button>
         </div>
       </div>
     </div>
