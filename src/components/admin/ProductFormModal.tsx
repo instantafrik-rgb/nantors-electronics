@@ -48,6 +48,8 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
   const [featured, setFeatured] = useState(false);
   const [isAvailable, setIsAvailable] = useState(false);
   const [stockCount, setStockCount] = useState("0");
+  const [lowStockThreshold, setLowStockThreshold] = useState("3");
+  const [sku, setSku] = useState("");
   const [badge, setBadge] = useState("");
   const [previewMode, setPreviewMode] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -76,6 +78,8 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
 
       setFeatured(productToEdit.featured);
       setStockCount(String(productToEdit.stockCount ?? 0));
+      setLowStockThreshold(String(productToEdit.lowStockThreshold ?? 3));
+      setSku(productToEdit.sku || "");
       setIsAvailable(productToEdit.isAvailable && (productToEdit.stockCount ?? 0) > 0);
       setBadge(productToEdit.badge || "");
     } else {
@@ -87,15 +91,14 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       setShortDescription("");
       setDescription("");
       setImages(["/images/product_gan_charger_1793629796501.jpg"]);
-      setFeatures([
-        "Technologie de pointe certifiée",
-        "Protection thermique intégrée",
-        "Garantie constructeur 12 mois",
-      ]);
-      setSpecKeys(["Puissance", "Matériau", "Garantie"]);
-      setSpecVals(["65 Watts", "Aluminium anodisé", "12 mois"]);
+      setFeatures([""]);
+      setSpecKeys([""]);
+      setSpecVals([""]);
+      setStockCount("0");
+      setLowStockThreshold("3");
+      setSku("");
       setFeatured(false);
-      setIsAvailable(true);
+      setIsAvailable(false);
       setBadge("");
     }
     setPreviewMode(false);
@@ -157,12 +160,20 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       return;
     }
 
-    if (!price.trim() || Number(price) <= 0) {
+    if (!price.trim() || !Number.isSafeInteger(Number(price)) || Number(price) <= 0) {
       setError("Le prix doit être supérieur à 0 FCFA");
       return;
     }
-    if (!Number.isInteger(Number(stockCount)) || Number(stockCount) < 0) {
+    if (!Number.isSafeInteger(Number(stockCount)) || Number(stockCount) < 0) {
       setError("Le stock doit être un nombre entier positif ou nul.");
+      return;
+    }
+    if (!Number.isSafeInteger(Number(lowStockThreshold)) || Number(lowStockThreshold) < 0) {
+      setError("Le seuil d'alerte doit être un entier positif ou nul.");
+      return;
+    }
+    if (originalPrice && (!Number.isSafeInteger(Number(originalPrice)) || Number(originalPrice) < Number(price))) {
+      setError("Le prix d'origine doit être supérieur ou égal au prix de vente.");
       return;
     }
     if (isAvailable && Number(stockCount) <= 0) {
@@ -211,6 +222,9 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
           images: validImages,
           featured,
           isAvailable,
+          stockCount: Number(stockCount),
+          lowStockThreshold: Number(lowStockThreshold),
+          sku: sku.trim() || undefined,
           badge: badge.trim() || undefined,
         },
         productToEdit ? productToEdit.id : undefined,
@@ -373,6 +387,11 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                 </div>
 
                 <div>
+                  <label className="block text-xs font-semibold text-[#cccccc] mb-1">Référence SKU (optionnelle)</label>
+                  <input type="text" value={sku} onChange={(e) => setSku(e.target.value)} placeholder="Ex : CHG-65W-001" className="w-full text-xs px-3.5 py-2.5 rounded-xl bg-[#1c1c1c] text-[#F3F0E9] border border-white/10 focus:outline-none focus:border-[#1769FF]" />
+                </div>
+
+                <div>
                   <label className="block text-xs font-semibold text-[#cccccc] mb-1">
                     Badge spécial (optionnel)
                   </label>
@@ -419,6 +438,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                 </div>
               </div>
 
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-[#cccccc] mb-1">
                   Quantité en stock *
@@ -437,6 +457,12 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                   className="w-full text-xs px-3.5 py-2.5 rounded-xl bg-[#1c1c1c] text-[#F3F0E9] border border-white/10 focus:outline-none focus:border-[#1769FF] font-mono"
                 />
                 <p className="mt-1 text-[11px] text-[#777777]">Le stock sera décrémenté uniquement à la confirmation d'une commande.</p>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-[#cccccc] mb-1">Seuil d'alerte de stock</label>
+                <input type="number" min="0" step="1" value={lowStockThreshold} onChange={(e) => setLowStockThreshold(e.target.value)} className="w-full text-xs px-3.5 py-2.5 rounded-xl bg-[#1c1c1c] text-[#F3F0E9] border border-white/10 focus:outline-none focus:border-[#1769FF] font-mono" />
+                <p className="mt-1 text-[11px] text-[#777777]">Une alerte apparaît lorsque le stock atteint ce seuil.</p>
+              </div>
               </div>
 
               {/* Toggles: Availability & Featured */}
