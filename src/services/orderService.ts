@@ -79,15 +79,19 @@ export const orderService = {
   },
 
   async setDeliveryFee(orderId: string, fee: number): Promise<void> {
-    if (!Number.isFinite(fee) || fee < 0) throw new Error("Les frais de livraison sont invalides.");
+    if (!Number.isSafeInteger(fee) || fee < 0) throw new Error("Les frais de livraison doivent être un montant entier positif ou nul.");
     const db = await database();
-    const { doc, getDoc, updateDoc } = await import("firebase/firestore");
+    const { doc, runTransaction } = await import("firebase/firestore");
     const ref = doc(db, "orders", orderId);
-    const snapshot = await getDoc(ref);
-    if (!snapshot.exists()) throw new Error("Commande introuvable.");
-    const order = snapshot.data() as CustomerOrder;
-    if (order.status !== "pending_confirmation") throw new Error("Les frais ne peuvent être modifiés qu'avant confirmation.");
-    await updateDoc(ref, { deliveryFee: fee, total: order.subtotal + fee, updatedAt: new Date().toISOString() });
+    await runTransaction(db, async (transaction) => {
+      const snapshot = await transaction.get(ref);
+      if (!snapshot.exists()) throw new Error("Commande introuvable.");
+      const order = snapshot.data() as CustomerOrder;
+      if (order.status !== "pending_confirmation") throw new Error("Les frais ne peuvent être modifiés qu'avant confirmation.");
+      const total = order.subtotal + fee;
+      if (!Number.isSafeInteger(total)) throw new Error("Le total de la commande dépasse la limite autorisée.");
+      transaction.update(ref, { deliveryFee: fee, total, updatedAt: new Date().toISOString() });
+    });
   },
 
   async updateStatus(orderId: string, status: OrderStatus): Promise<void> {
