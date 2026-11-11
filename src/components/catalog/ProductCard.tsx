@@ -41,11 +41,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       : null;
 
   return (
-    <article className="group relative bg-[#181818] rounded-xl sm:rounded-2xl border border-white/10 hover:border-[#FF6B00]/40 shadow-sm hover:shadow-[0_8px_30px_rgba(0,0,0,0.5)] transition-all duration-300 flex flex-col overflow-hidden text-[#F3F0E9]">
+    <article className="group relative bg-white rounded-xl sm:rounded-2xl border border-slate-200 hover:border-[#1769FF]/40 shadow-sm hover:shadow-[0_8px_30px_rgba(0,0,0,0.5)] transition-all duration-300 flex flex-col overflow-hidden text-slate-900">
       {/* Visual Product Showcase */}
       <div
         onClick={() => onOpenDetails(product)}
-        className="relative aspect-4/3 w-full bg-[#141414] overflow-hidden cursor-pointer select-none"
+        className="relative aspect-4/3 w-full bg-slate-50 overflow-hidden cursor-pointer select-none"
       >
         {!imageError ? (
           <img
@@ -62,9 +62,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             }`}
           />
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-[#141414] text-[#777777] p-4 text-center">
-            <Zap className="w-6 h-6 sm:w-8 sm:h-8 text-[#FF6B00] mb-2 stroke-1" />
-            <span className="text-[10px] sm:text-xs font-medium text-[#999999] line-clamp-1">
+          <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50 text-slate-500 p-4 text-center">
+            <Zap className="w-6 h-6 sm:w-8 sm:h-8 text-[#1769FF] mb-2 stroke-1" />
+            <span className="text-[10px] sm:text-xs font-medium text-slate-600 line-clamp-1">
               {product.name}
             </span>
           </div>
@@ -73,12 +73,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         {/* Subtle status tags */}
         <div className="absolute top-2 left-2 sm:top-3 sm:left-3 flex flex-col gap-1 pointer-events-none z-10">
           {product.badge && (
-            <span className="px-1.5 py-0.5 sm:px-2.5 sm:py-1 text-[9px] sm:text-[11px] font-semibold tracking-wider uppercase bg-[#111111]/90 text-[#FF6B00] border border-[#FF6B00]/30 backdrop-blur-xs rounded sm:rounded-md shadow-xs">
+            <span className="px-1.5 py-0.5 sm:px-2.5 sm:py-1 text-[9px] sm:text-[11px] font-semibold tracking-wider uppercase bg-white/90 text-[#1769FF] border border-[#1769FF]/30 backdrop-blur-xs rounded sm:rounded-md shadow-xs">
               {product.badge}
             </span>
           )}
           {discountPercent && (
-            <span className="px-1.5 py-0.5 sm:px-2 sm:py-0.5 text-[9px] sm:text-[10px] font-bold text-[#111111] bg-[#FF6B00] rounded sm:rounded-md shadow-xs">
+            <span className="px-1.5 py-0.5 sm:px-2 sm:py-0.5 text-[9px] sm:text-[10px] font-bold text-white bg-[#1769FF] rounded sm:rounded-md shadow-xs">
               -{discountPercent}%
             </span>
           )}
@@ -86,8 +86,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
         {/* Out of stock overlay if unavailable */}
         {!product.isAvailable && (
-          <div className="absolute inset-0 bg-[#111111]/80 backdrop-blur-[2px] flex items-center justify-center p-2 text-center z-10">
-            <span className="px-2.5 py-1 bg-white/10 text-[#F3F0E9] border border-white/20 text-[10px] sm:text-xs font-semibold rounded sm:rounded-md shadow-md uppercase tracking-wider">
+          <div className="absolute inset-0 bg-white/80 backdrop-blur-[2px] flex items-center justify-center p-2 text-center z-10">
+            <span className="px-2.5 py-1 bg-white/10 text-slate-900 border border-slate-300 text-[10px] sm:text-xs font-semibold rounded sm:rounded-md shadow-md uppercase tracking-wider">
               Rupture
             </span>
           </div>
@@ -100,7 +100,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             e.stopPropagation();
             onOpenDetails(product);
           }}
-          className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 w-7 h-7 sm:w-9 sm:h-9 bg-[#111111]/90 hover:bg-[#FF6B00] text-[#F3F0E9] hover:text-[#111111] rounded-full shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 active:scale-95 border border-white/15 cursor-pointer"
+          className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 w-7 h-7 sm:w-9 sm:h-9 bg-white/90 hover:bg-[#1769FF] text-slate-900 hover:text-white rounded-full shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 active:scale-95 border border-white/15 cursor-pointer"
           title="Voir la fiche détaillée"
         >
           <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -108,20 +108,20 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       </div>
 
       {/* Card Content & Metadata */}
-      <div className="p-3 sm:p-5 flex-1 flex flex-col justify-between bg-[#181818]">
+      <div className="p-3 sm:p-5 flex-1 flex flex-col justify-between bg-white">
         <div>
           {/* Category Metadata */}
-          <div className="flex items-center justify-between text-xs text-[#777777] mb-1">
-            <span className="uppercase tracking-widest font-semibold text-[9px] sm:text-[10px] text-[#777777] truncate max-w-[65%]">
+          <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
+            <span className="uppercase tracking-widest font-semibold text-[9px] sm:text-[10px] text-slate-500 truncate max-w-[65%]">
               {product.categoryLabel || product.category}
             </span>
             {product.isAvailable ? (
-              <span className="inline-flex items-center gap-0.5 sm:gap-1 text-[9px] sm:text-[11px] text-[#FF6B00] font-medium shrink-0">
+              <span className="inline-flex items-center gap-0.5 sm:gap-1 text-[9px] sm:text-[11px] text-[#1769FF] font-medium shrink-0">
                 <CheckCircle2 className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                 <span>En stock</span>
               </span>
             ) : (
-              <span className="text-[9px] sm:text-[11px] text-[#777777] shrink-0">
+              <span className="text-[9px] sm:text-[11px] text-slate-500 shrink-0">
                 Sur commande
               </span>
             )}
@@ -130,7 +130,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           {/* Product Title */}
           <h3
             onClick={() => onOpenDetails(product)}
-            className="font-display font-semibold text-[#F3F0E9] text-xs sm:text-base leading-snug line-clamp-2 hover:text-[#FF6B00] cursor-pointer transition-colors min-h-[2rem] sm:min-h-[2.5rem]"
+            className="font-display font-semibold text-slate-900 text-xs sm:text-base leading-snug line-clamp-2 hover:text-[#1769FF] cursor-pointer transition-colors min-h-[2rem] sm:min-h-[2.5rem]"
           >
             {product.name}
           </h3>
@@ -138,25 +138,25 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           {/* Primary Technical Feature (if present in product data) */}
           {primaryFeature && (
             <div className="mt-1 flex items-center gap-1 text-[10px] sm:text-[11px] font-medium text-[#aaaaaa] line-clamp-1">
-              <Zap className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#FF6B00] shrink-0" />
+              <Zap className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#1769FF] shrink-0" />
               <span className="truncate">{primaryFeature}</span>
             </div>
           )}
 
           {/* Short description (visible on tablet/desktop for extra context) */}
-          <p className="mt-1.5 text-xs text-[#777777] line-clamp-2 leading-relaxed hidden sm:block">
+          <p className="mt-1.5 text-xs text-slate-500 line-clamp-2 leading-relaxed hidden sm:block">
             {product.shortDescription}
           </p>
         </div>
 
         {/* Price & Purchase Action Row */}
-        <div className="mt-3 sm:mt-5 pt-2.5 sm:pt-4 border-t border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div className="mt-3 sm:mt-5 pt-2.5 sm:pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex sm:flex-col items-baseline sm:items-start gap-1.5 sm:gap-0">
-            <span className="font-mono tabular-nums text-sm sm:text-lg font-bold text-[#F3F0E9]">
+            <span className="font-mono tabular-nums text-sm sm:text-lg font-bold text-slate-900">
               {formatFCFA(product.price)}
             </span>
             {product.originalPrice && product.originalPrice > product.price && (
-              <span className="font-mono tabular-nums text-[10px] sm:text-xs text-[#666666] line-through">
+              <span className="font-mono tabular-nums text-[10px] sm:text-xs text-slate-500 line-through">
                 {formatFCFA(product.originalPrice)}
               </span>
             )}
@@ -172,8 +172,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             onClick={(e) => e.stopPropagation()}
             className={`inline-flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-[10px] sm:text-xs font-bold rounded-lg sm:rounded-xl transition-all duration-200 shrink-0 ${
               product.isAvailable
-                ? "bg-[#FF6B00] hover:bg-[#e05f00] text-[#111111] shadow-[0_2px_10px_rgba(255,107,0,0.25)] active:scale-95"
-                : "bg-[#222222] text-[#555555] cursor-not-allowed pointer-events-none"
+                ? "bg-[#1769FF] hover:bg-[#0f56d9] text-white shadow-[0_2px_10px_rgba(255,107,0,0.25)] active:scale-95"
+                : "bg-slate-100 text-slate-400 cursor-not-allowed pointer-events-none"
             }`}
             title="Commander directement sur WhatsApp"
           >
