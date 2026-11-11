@@ -458,7 +458,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 Confirmer la suppression
               </h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Êtes-vous sûr de vouloir supprimer définitivement le produit <strong className="text-white">{deleteCandidate.name}</strong> ?
+                Êtes-vous sûr de vouloir supprimer définitivement le produit <strong className="text-slate-900">{deleteCandidate.name}</strong> ?
               </p>
               <div className="pt-2 flex items-center justify-end gap-2">
                 <button
