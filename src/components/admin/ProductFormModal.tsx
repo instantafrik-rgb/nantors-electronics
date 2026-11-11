@@ -46,7 +46,8 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     "12 mois",
   ]);
   const [featured, setFeatured] = useState(false);
-  const [isAvailable, setIsAvailable] = useState(true);
+  const [isAvailable, setIsAvailable] = useState(false);
+  const [stockCount, setStockCount] = useState("0");
   const [badge, setBadge] = useState("");
   const [previewMode, setPreviewMode] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -74,7 +75,8 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       setSpecVals(Object.values(specs));
 
       setFeatured(productToEdit.featured);
-      setIsAvailable(productToEdit.isAvailable);
+      setStockCount(String(productToEdit.stockCount ?? 0));
+      setIsAvailable(productToEdit.isAvailable && (productToEdit.stockCount ?? 0) > 0);
       setBadge(productToEdit.badge || "");
     } else {
       // Defaults for new product
@@ -157,6 +159,14 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
 
     if (!price.trim() || Number(price) <= 0) {
       setError("Le prix doit être supérieur à 0 FCFA");
+      return;
+    }
+    if (!Number.isInteger(Number(stockCount)) || Number(stockCount) < 0) {
+      setError("Le stock doit être un nombre entier positif ou nul.");
+      return;
+    }
+    if (isAvailable && Number(stockCount) <= 0) {
+      setError("Un produit ne peut être disponible sans stock positif.");
       return;
     }
 
@@ -407,6 +417,26 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                     className="w-full text-xs px-3.5 py-2.5 rounded-xl bg-[#1c1c1c] text-[#F3F0E9] border border-white/10 focus:outline-none focus:border-[#FF6B00] focus:ring-1 focus:ring-[#FF6B00] font-mono placeholder:text-[#555555]"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#cccccc] mb-1">
+                  Quantité en stock *
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  required
+                  value={stockCount}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setStockCount(value);
+                    if (Number(value) <= 0) setIsAvailable(false);
+                  }}
+                  className="w-full text-xs px-3.5 py-2.5 rounded-xl bg-[#1c1c1c] text-[#F3F0E9] border border-white/10 focus:outline-none focus:border-[#1769FF] font-mono"
+                />
+                <p className="mt-1 text-[11px] text-[#777777]">Le stock sera décrémenté uniquement à la confirmation d'une commande.</p>
               </div>
 
               {/* Toggles: Availability & Featured */}
