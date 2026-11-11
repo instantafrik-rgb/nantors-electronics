@@ -100,7 +100,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onExploreCatalog }) => {
             </div>
             <h3 className="font-display font-bold text-base text-[#F3F0E9]">Livraison au Togo</h3>
             <p className="text-xs text-[#888888] leading-relaxed font-light">
-              La livraison est organisée à Lomé et dans les autres villes du Togo. Les frais et modalités sont confirmés avant validation de la commande.
+              La livraison est organisée à Lomé. Les frais et modalités sont confirmés avant validation de la commande.
             </p>
           </div>
         </div>
