@@ -6,7 +6,7 @@
 import React from 'react';
 import { MessageSquare, ArrowRight, CheckCircle2, Zap, ShieldCheck } from 'lucide-react';
 import { Product } from '../../types';
-import { formatFCFA, generateWhatsAppOrderUrl } from '../../utils/formatters';
+import { formatFCFA } from '../../utils/formatters';
 
 interface ProductSpotlightProps {
   product: Product | null;
@@ -24,7 +24,6 @@ export const ProductSpotlight: React.FC<ProductSpotlightProps> = ({ product, onO
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : null;
 
-  const whatsappUrl = generateWhatsAppOrderUrl(product, 'Commande directe depuis la sélection Produit Phare');
 
   // Pick top 3-4 features
   const displayedFeatures = product.features && product.features.length > 0
@@ -126,15 +125,14 @@ export const ProductSpotlight: React.FC<ProductSpotlightProps> = ({ product, onO
 
               {/* CTAs */}
               <div className="flex flex-wrap items-center gap-4 pt-4">
-                <a
-                  href={whatsappUrl}
-                  target={whatsappUrl.startsWith('#') ? undefined : '_blank'}
-                  rel={whatsappUrl.startsWith('#') ? undefined : 'noopener noreferrer'}
+                <button
+                  type="button"
+                  onClick={() => onOpenDetails(product)}
                   className="px-6 py-3.5 bg-[#1769FF] hover:bg-[#0f56d9] text-white font-bold text-xs sm:text-sm rounded-xl shadow-[0_2px_15px_rgba(23,105,255,0.18)] hover:shadow-[0_4px_25px_rgba(23,105,255,0.24)] transition-all flex items-center gap-2 active:scale-98"
                 >
-                  <MessageSquare className="w-4 h-4 fill-[#111111] stroke-none" />
-                  <span>Commander sur WhatsApp (Lomé & Togo)</span>
-                </a>
+                  <MessageSquare className="w-4 h-4" />
+                  <span>Commander (paiement à la livraison)</span>
+                </button>
 
                 <button
                   onClick={() => onOpenDetails(product)}
