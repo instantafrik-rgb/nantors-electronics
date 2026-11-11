@@ -28,3 +28,9 @@ jobs:
         run: npm run lint
       - name: Production build
         run: npm run build
+      - name: Install Cloud Functions dependencies
+        working-directory: functions
+        run: npm install
+      - name: Build Cloud Functions
+        working-directory: functions
+        run: npm run build
