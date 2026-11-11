@@ -312,10 +312,19 @@ class ProductService {
       const db = await getDb();
       if (db) {
         try {
-          const { doc, deleteDoc } = await import("firebase/firestore");
+          const { collection, doc, deleteDoc, getDocs } = await import("firebase/firestore");
+          const ordersSnapshot = await getDocs(collection(db, "orders"));
+          const hasOrderHistory = ordersSnapshot.docs.some((orderDoc) =>
+            Array.isArray(orderDoc.data().items) &&
+            orderDoc.data().items.some((item: any) => item.productId === id)
+          );
+          if (hasOrderHistory) {
+            throw new Error("Ce produit figure dans l'historique des commandes. Désactivez sa disponibilité au lieu de le supprimer afin de préserver les mouvements de stock.");
+          }
           await deleteDoc(doc(db, "products", id));
           return;
         } catch (err) {
+          if (err instanceof Error && err.message.startsWith("Ce produit figure")) throw err;
           console.error("Erreur suppression produit Firestore:", err);
           throw new Error("La suppression n'a pas été effectuée dans Firestore.");
         }
