@@ -58,7 +58,7 @@ export const createWebsiteOrder = onCall(
 
     const quantities = new Map<string, number>();
     for (const item of requestedItems) {
-      if (!item || typeof item.productId !== "string" || item.productId.length > 150 ||
+      if (!item || typeof item.productId !== "string" || item.productId.trim().length < 1 || item.productId.length > 150 ||
           !Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > 50) {
         throw new HttpsError("invalid-argument", "Un article contient une référence ou une quantité invalide.");
       }
