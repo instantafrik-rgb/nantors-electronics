@@ -60,8 +60,8 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({
               Catalogue Nantor's Electronics
             </h1>
             <p className="mt-1.5 sm:mt-2 text-xs sm:text-sm text-[#888888] leading-relaxed font-light">
-              Explorez notre gamme complète d'accessoires de charge rapide, connectique haute performance et périphériques certifiés. 
-              Toutes les commandes s'effectuent sur WhatsApp avec règlement à la livraison.
+              Explorez notre gamme complète d'accessoires pour smartphones, ordinateurs et équipements du quotidien. 
+              Commandez en ligne ou échangez avec notre équipe sur WhatsApp. Le règlement s'effectue à la livraison.
             </p>
           </div>
 
