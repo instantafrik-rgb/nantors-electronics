@@ -36,8 +36,8 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectCategory }) 
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-[#F3F0E9] font-semibold text-sm">Garantie 12 Mois</h4>
-              <p className="text-xs text-[#777777] mt-0.5 font-light">Tous nos accessoires sont certifiés avec échange standard rapide.</p>
+              <h4 className="text-[#F3F0E9] font-semibold text-sm">Conseil avant commande</h4>
+              <p className="text-xs text-[#777777] mt-0.5 font-light">Notre équipe vous aide à vérifier les caractéristiques et la compatibilité.</p>
             </div>
           </div>
 
@@ -46,8 +46,8 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectCategory }) 
               <RefreshCw className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-[#F3F0E9] font-semibold text-sm">Qualité Premium Testée</h4>
-              <p className="text-xs text-[#777777] mt-0.5 font-light">Zéro contrefaçon : composants GaN, cuivre pur et alliages CNC.</p>
+              <h4 className="text-[#F3F0E9] font-semibold text-sm">Informations produit</h4>
+              <p className="text-xs text-[#777777] mt-0.5 font-light">Consultez les détails et caractéristiques disponibles sur chaque fiche produit.</p>
             </div>
           </div>
 
@@ -56,8 +56,8 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectCategory }) 
               <MessageSquare className="w-5 h-5 fill-[#FF6B00] stroke-none" />
             </div>
             <div>
-              <h4 className="text-[#F3F0E9] font-semibold text-sm">Support WhatsApp 7j/7</h4>
-              <p className="text-xs text-[#777777] mt-0.5 font-light">Conseils techniques personnalisés et suivi instantané des commandes.</p>
+              <h4 className="text-[#F3F0E9] font-semibold text-sm">Contact WhatsApp</h4>
+              <p className="text-xs text-[#777777] mt-0.5 font-light">Une question sur un produit ou une commande ? Contactez notre équipe.</p>
             </div>
           </div>
         </div>
@@ -79,8 +79,8 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectCategory }) 
           </div>
 
           <p className="text-sm text-[#888888] max-w-sm leading-relaxed font-light">
-            Spécialiste agréé en accessoires de pointe pour téléphones et ordinateurs portables. 
-            Élevez votre productivité avec des équipements durables, fiables et élégants.
+            Une sélection d'accessoires pour smartphones, ordinateurs et équipements du quotidien. 
+            Trouvez l'accessoire adapté à votre appareil et commandez en toute simplicité.
           </p>
 
           <div className="pt-2">
@@ -135,7 +135,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectCategory }) 
                 }} 
                 className="hover:text-[#FF6B00] transition-colors cursor-pointer"
               >
-                Chargeurs rapides GaN
+                Chargeurs
               </button>
             </li>
             <li>
@@ -146,7 +146,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectCategory }) 
                 }} 
                 className="hover:text-[#FF6B00] transition-colors cursor-pointer"
               >
-                Câbles blindés Type-C
+                Câbles & connectique
               </button>
             </li>
             <li>
@@ -179,7 +179,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectCategory }) 
                 }} 
                 className="hover:text-[#FF6B00] transition-colors cursor-pointer"
               >
-                Casques & Audio ANC
+                Audio & écouteurs
               </button>
             </li>
           </ul>
