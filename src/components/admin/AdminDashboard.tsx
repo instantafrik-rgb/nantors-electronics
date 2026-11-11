@@ -24,6 +24,7 @@ import { productService } from '../../services/productService';
 import { authService } from '../../services/authService';
 import { OrdersPanel } from './OrdersPanel';
 import { CategoriesPanel } from './CategoriesPanel';
+import { InventoryPanel } from './InventoryPanel';
 
 interface AdminDashboardProps {
   products: Product[];
@@ -42,7 +43,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onOpenProductDetails,
   onExitAdmin,
 }) => {
-  const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'categories'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'categories' | 'inventory'>('products');
   const [search, setSearch] = useState('');
   const [selectedCat, setSelectedCat] = useState('all');
   const [formModalOpen, setFormModalOpen] = useState(false);
@@ -205,12 +206,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <button onClick={() => setActiveTab('products')} className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${activeTab === 'products' ? 'bg-[#1769FF] text-white' : 'text-slate-600 hover:bg-slate-100'}`}>Produits</button>
           <button onClick={() => setActiveTab('orders')} className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${activeTab === 'orders' ? 'bg-[#1769FF] text-white' : 'text-slate-600 hover:bg-slate-100'}`}>Commandes</button>
           <button onClick={() => setActiveTab('categories')} className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${activeTab === 'categories' ? 'bg-[#1769FF] text-white' : 'text-slate-600 hover:bg-slate-100'}`}>Catégories</button>
+          <button onClick={() => setActiveTab('inventory')} className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${activeTab === 'inventory' ? 'bg-[#1769FF] text-white' : 'text-slate-600 hover:bg-slate-100'}`}>Stock</button>
         </nav>
 
         {activeTab === 'orders' ? (
           <OrdersPanel products={products} onRefreshProducts={onRefreshData} />
         ) : activeTab === 'categories' ? (
           <CategoriesPanel categories={categories} products={products} onRefresh={onRefreshData} />
+        ) : activeTab === 'inventory' ? (
+          <InventoryPanel products={products} onRefresh={onRefreshData} />
         ) : (
           <>
         {/* 4 Stats Cards in CASE editorial style */}
