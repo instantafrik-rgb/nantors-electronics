@@ -39,7 +39,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       : null;
 
   return (
-    <article className="group relative bg-white rounded-xl sm:rounded-2xl border border-slate-200 hover:border-[#1769FF]/40 shadow-sm hover:shadow-[0_8px_30px_rgba(0,0,0,0.5)] transition-all duration-300 flex flex-col overflow-hidden text-slate-900">
+    <article className="group relative bg-white rounded-xl sm:rounded-2xl border border-slate-200 hover:border-[#1769FF]/40 shadow-sm hover:shadow-[0_8px_30px_rgba(15,23,42,0.12)] transition-all duration-300 flex flex-col overflow-hidden text-slate-900">
       {/* Visual Product Showcase */}
       <div
         onClick={() => onOpenDetails(product)}
