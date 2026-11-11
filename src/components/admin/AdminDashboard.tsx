@@ -224,7 +224,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         ) : activeTab === 'customers' ? (
           <CustomersPanel />
         ) : activeTab === 'analytics' ? (
-          <AnalyticsPanel />
+          <AnalyticsPanel products={products} />
         ) : activeTab === 'overview' ? (
           <OverviewPanel products={products} />
         ) : (
