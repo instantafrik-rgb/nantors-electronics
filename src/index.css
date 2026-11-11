@@ -1,47 +1,52 @@
 @import "tailwindcss";
 
 @layer base {
-  html {
-    scroll-behavior: smooth;
-    background-color: #111111;
-  }
-
+  html { scroll-behavior: smooth; background: #f5f7fb; }
   body {
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    background-color: #111111;
-    color: #F3F0E9;
+    background: #f5f7fb;
+    color: #172033;
   }
-  
-  h1, h2, h3, h4, h5, h6, .font-display {
-    font-family: 'Outfit', 'Syne', system-ui, -apple-system, sans-serif;
-    letter-spacing: -0.025em;
+  h1,h2,h3,h4,h5,h6,.font-display {
+    font-family: 'Outfit','Syne',system-ui,-apple-system,sans-serif;
+    letter-spacing: -0.03em;
   }
+  * { scrollbar-color: #cbd5e1 transparent; }
 }
+::-webkit-scrollbar { width: 7px; height: 7px; }
+::-webkit-scrollbar-track { background: #f1f5f9; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: #1769ff; }
+.scrollbar-none::-webkit-scrollbar { display:none; }
+.scrollbar-none { -ms-overflow-style:none; scrollbar-width:none; }
 
-/* Custom sleek dark scrollbars */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: #111111;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #2a2a2a;
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #FF6B00;
-}
-
-/* Utilities */
-.scrollbar-none::-webkit-scrollbar {
-  display: none;
-}
-.scrollbar-none {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
+/* Nantor's premium light storefront — visual layer for the existing components */
+body, #root { background: #f5f7fb !important; color: #172033; }
+[class*="bg-[#111111]"] { background-color: #f5f7fb !important; }
+[class*="bg-[#0b0b0b]"] { background-color: #ffffff !important; }
+[class*="bg-[#141414]"] { background-color: #ffffff !important; }
+[class*="bg-[#181818]"] { background-color: #ffffff !important; }
+[class*="bg-[#1a1a1a]"] { background-color: #f1f5f9 !important; }
+[class*="bg-[#161616]"] { background-color: #f8fafc !important; }
+[class*="bg-[#1c1c1c]"] { background-color: #eff4ff !important; }
+[class*="bg-[#202020]"] { background-color: #eaf1ff !important; }
+[class*="bg-[#222222]"] { background-color: #eef2f7 !important; }
+[class*="bg-[#1f1f1f]"] { background-color: #eaf1ff !important; }
+[class*="text-[#F3F0E9]"] { color: #172033 !important; }
+[class*="text-[#cccccc]"] { color: #475569 !important; }
+[class*="text-[#aaaaaa]"] { color: #64748b !important; }
+[class*="text-[#999999]"] { color: #64748b !important; }
+[class*="text-[#888888]"] { color: #64748b !important; }
+[class*="text-[#777777]"] { color: #718096 !important; }
+[class*="text-[#666666]"] { color: #94a3b8 !important; }
+[class*="text-[#555555]"] { color: #94a3b8 !important; }
+[class*="text-[#444444]"] { color: #cbd5e1 !important; }
+[class*="border-[#222222]"] { border-color: #e2e8f0 !important; }
+[class*="border-white/10"], [class*="border-white/5"], [class*="border-white/15"] { border-color: #e2e8f0 !important; }
+[class*="text-[#FF6B00]"] { color: #1769ff !important; }
+[class*="bg-[#FF6B00]"] { background-color: #1769ff !important; }
+[class*="border-[#FF6B00]"] { border-color: #1769ff !important; }
+[class*="hover:bg-[#e05f00]"]:hover { background-color: #0f55d9 !important; }
+[class*="shadow-[0_0_"] { box-shadow: 0 8px 24px rgba(23,105,255,.10) !important; }
+[class*="bg-[#111111]"] a, [class*="bg-[#111111]"] button { transition: all .22s ease; }
+header { box-shadow: 0 8px 28px rgba(15,23,42,.06) !important; }
