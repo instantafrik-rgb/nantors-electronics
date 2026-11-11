@@ -124,7 +124,21 @@ service cloud.firestore {
     }
 
     // -------------------------------------------------------------
-    // 8. VERROUILLAGE TOTAL DU RESTE PAR DÉFAUT
+    // 8. COMMANDES ET MOUVEMENTS DE STOCK
+    // Les écritures publiques seront ajoutées via une Cloud Function
+    // validant prix, quantités et disponibilité côté serveur.
+    // -------------------------------------------------------------
+    match /orders/{orderId} {
+      allow read, create, update, delete: if isSuperAdmin();
+    }
+
+    match /inventory_movements/{movementId} {
+      allow read, create: if isSuperAdmin();
+      allow update, delete: if false;
+    }
+
+    // -------------------------------------------------------------
+    // 9. VERROUILLAGE TOTAL DU RESTE PAR DÉFAUT
     // -------------------------------------------------------------
     match /{document=**} {
       allow read, write: if false;
