@@ -355,6 +355,53 @@ class ProductService {
     return newState;
   }
 
+  public async createCategory(input: Omit<CategoryInfo, "id">): Promise<CategoryInfo> {
+    const category: CategoryInfo = { ...input, id: `cat-${Date.now()}-${Math.random().toString(36).slice(2, 6)}` };
+    if (this.dataSource === "firebase") {
+      const db = await getDb();
+      if (!db) throw new Error("Firestore n'est pas disponible.");
+      const { doc, setDoc } = await import("firebase/firestore");
+      await setDoc(doc(db, "categories", category.id), category);
+      return category;
+    }
+    const categories = await this.getCategories();
+    localStorage.setItem(LOCAL_STORAGE_CATEGORIES_KEY, JSON.stringify([...categories, category]));
+    return category;
+  }
+
+  public async updateCategory(id: string, updates: Partial<CategoryInfo>): Promise<void> {
+    if (this.dataSource === "firebase") {
+      const db = await getDb();
+      if (!db) throw new Error("Firestore n'est pas disponible.");
+      const { doc, updateDoc } = await import("firebase/firestore");
+      await updateDoc(doc(db, "categories", id), updates);
+      return;
+    }
+    const categories = await this.getCategories();
+    const index = categories.findIndex((category) => category.id === id);
+    if (index < 0) throw new Error("Catégorie introuvable.");
+    categories[index] = { ...categories[index], ...updates };
+    localStorage.setItem(LOCAL_STORAGE_CATEGORIES_KEY, JSON.stringify(categories));
+  }
+
+  public async deleteCategory(id: string): Promise<void> {
+    const category = (await this.getCategories()).find((item) => item.id === id);
+    if (!category) throw new Error("Catégorie introuvable.");
+    const products = await this.getProducts({}, true);
+    if (products.some((product) => product.category === category.slug)) {
+      throw new Error("Cette catégorie contient encore des produits. Réaffectez-les avant de la supprimer.");
+    }
+    if (this.dataSource === "firebase") {
+      const db = await getDb();
+      if (!db) throw new Error("Firestore n'est pas disponible.");
+      const { doc, deleteDoc } = await import("firebase/firestore");
+      await deleteDoc(doc(db, "categories", id));
+      return;
+    }
+    const categories = await this.getCategories();
+    localStorage.setItem(LOCAL_STORAGE_CATEGORIES_KEY, JSON.stringify(categories.filter((item) => item.id !== id)));
+  }
+
   public resetToDemoData(): void {
     localStorage.setItem(
       LOCAL_STORAGE_PRODUCTS_KEY,
