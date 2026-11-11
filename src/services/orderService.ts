@@ -48,16 +48,20 @@ export const orderService = {
     }
     const { collection, doc, getDoc, runTransaction } = await import("firebase/firestore");
     const normalizedItems: OrderItem[] = [];
+    const quantities = new Map<string, number>();
     for (const item of input.items) {
-      const productSnapshot = await getDoc(doc(db, "products", item.productId));
-      if (!productSnapshot.exists()) throw new Error("Produit introuvable : " + item.productName);
+      quantities.set(item.productId, (quantities.get(item.productId) ?? 0) + item.quantity);
+    }
+    for (const [productId, quantity] of quantities.entries()) {
+      const productSnapshot = await getDoc(doc(db, "products", productId));
+      if (!productSnapshot.exists()) throw new Error("Produit introuvable : " + productId);
       const product = productSnapshot.data();
       if (product.isAvailable !== true) throw new Error("Produit indisponible : " + product.name);
       normalizedItems.push({
-        productId: item.productId,
+        productId,
         productName: String(product.name),
         unitPrice: Number(product.price),
-        quantity: item.quantity
+        quantity
       });
     }
     const subtotal = normalizedItems.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
