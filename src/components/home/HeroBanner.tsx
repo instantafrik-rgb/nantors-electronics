@@ -72,10 +72,10 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                     ? undefined
                     : "noopener noreferrer"
                 }
-                className="px-6 py-3.5 bg-[#1769FF] hover:bg-[#0f56d9] text-white font-bold text-sm rounded-xl shadow-[0_2px_15px_rgba(255,107,0,0.3)] hover:shadow-[0_4px_25px_rgba(255,107,0,0.45)] transition-all flex items-center gap-2 active:scale-98"
+                className="px-6 py-3.5 bg-[#1769FF] hover:bg-[#0f56d9] text-white font-bold text-sm rounded-xl shadow-[0_2px_15px_rgba(23,105,255,0.18)] hover:shadow-[0_4px_25px_rgba(23,105,255,0.24)] transition-all flex items-center gap-2 active:scale-98"
               >
                 <MessageSquare className="w-4 h-4 fill-[#111111] stroke-none" />
-                <span>Commander sur WhatsApp</span>
+                <span>Parler à un conseiller</span>
               </a>
 
               <button
