@@ -32,13 +32,16 @@ interface ProductDetailModalProps {
   onSelectCategory?: (slug: string) => void;
 }
 
-export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
-  product,
-  onClose,
-  onSelectCategory,
-}) => {
-  if (!product) return null;
+export const ProductDetailModal: React.FC<ProductDetailModalProps> = (props) => {
+  if (!props.product) return null;
+  return <ProductDetailContent product={props.product} onClose={props.onClose} onSelectCategory={props.onSelectCategory} />;
+};
 
+const ProductDetailContent: React.FC<{
+  product: Product;
+  onClose: () => void;
+  onSelectCategory?: (slug: string) => void;
+}> = ({ product, onClose, onSelectCategory }) => {
   // 1. Interactive Quantity State (minimum 1)
   const [quantity, setQuantity] = useState<number>(1);
   // Optional customized destination/delivery address for Togo
