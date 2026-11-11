@@ -27,6 +27,8 @@ export interface Product {
   featured: boolean;
   isAvailable: boolean;
   stockCount?: number;
+  lowStockThreshold?: number;
+  sku?: string;
   badge?: string; // e.g. "Best-seller", "Nouveau", "Promo"
   createdAt: string;
   updatedAt: string;
