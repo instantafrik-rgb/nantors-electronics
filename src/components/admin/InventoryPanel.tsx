@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { ArrowDownToLine, ArrowUpFromLine, RefreshCw } from "lucide-react";
 import type { Product } from "../../types";
-import { formatFCFA } from "../../utils/formatters";
 import { inventoryService, type InventoryMovement } from "../../services/inventoryService";
 
 export const InventoryPanel: React.FC<{ products: Product[]; onRefresh: () => void }> = ({ products, onRefresh }) => {
