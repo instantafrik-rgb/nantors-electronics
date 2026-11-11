@@ -113,8 +113,8 @@ export const SystemConfigModal: React.FC<SystemConfigModalProps> = ({
                 </div>
                 <p className="text-[11px] text-[#888888] font-light">
                   {fbConfigured
-                    ? "Variables Firebase détectées. La connexion réelle dépend aussi des règles et de l'accès au projet."
-                    : 'En attente de la clé API Firebase dans .env.'}
+                    ? "Variables Firebase détectées. Vérifiez aussi les règles, les autorisations et la connexion."
+                    : 'Ajoutez les variables Firebase dans les paramètres Vercel pour activer le stockage cloud.'}
                 </p>
               </button>
             </div>
@@ -135,7 +135,7 @@ export const SystemConfigModal: React.FC<SystemConfigModalProps> = ({
             <div className="text-xs space-y-1 font-mono text-[#888888] pt-1">
               <div>projectId : <span className="text-[#F3F0E9] font-bold">{config.firebase.projectId}</span></div>
               <div>authDomain : <span className="text-[#F3F0E9] font-bold">{config.firebase.authDomain}</span></div>
-              <div>Règles de sécurité : <span className="text-emerald-400 font-sans font-medium">firestore.rules généré & conforme</span></div>
+              <div>Règles de sécurité : <span className="text-emerald-400 font-sans font-medium">fichier présent · déploiement et tests requis</span></div>
             </div>
           </div>
 
