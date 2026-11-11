@@ -213,16 +213,16 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             <div className="mt-6 pt-6 border-t border-white/10 hidden md:grid grid-cols-2 gap-3 text-xs text-[#888888]">
               <div className="flex items-center gap-2">
                 <Truck className="w-4 h-4 text-[#FF6B00] shrink-0" />
-                <span className="text-[#cccccc]">Livraison express 24/48h</span>
+                <span className="text-[#cccccc]">Modalités de livraison à confirmer</span>
               </div>
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-[#FF6B00] shrink-0" />
-                <span className="text-[#cccccc]">Garantie Nantor's 12 mois</span>
+                <span className="text-[#cccccc]">Conditions précisées avant commande</span>
               </div>
             </div>
           </div>
 
-          {/* Right Column: Contiguous Purchase Module & Details */}
+          {/* Right Column: Purchase Module & Details */}
           <div className="p-5 sm:p-6 md:p-8 flex flex-col justify-between max-h-[85vh] overflow-y-auto bg-[#141414]">
             <div>
               {/* Category & Availability */}
@@ -247,7 +247,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     En Stock Immédiat
                   </span>
                 ) : (
-                  <span className="text-amber-400 font-medium">Sur commande sous 48h</span>
+                  <span className="text-amber-400 font-medium">Disponibilité à confirmer</span>
                 )}
               </div>
 
@@ -320,7 +320,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               <div className="mt-5 p-4 rounded-2xl bg-[#191919] border border-white/10 space-y-2">
                 <div className="flex items-center gap-2 text-xs font-bold text-[#FF6B00] uppercase tracking-wider">
                   <ShieldCheck className="w-4 h-4 text-[#FF6B00]" />
-                  <span>Garantie & Compatibilité</span>
+                  <span>Compatibilité & informations</span>
                 </div>
 
                 {/* Real compatibility data if present in specifications or features */}
@@ -347,7 +347,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 )}
 
                 <p className="text-xs text-[#888888] leading-relaxed pt-0.5">
-                  <strong className="text-[#F3F0E9]">Garantie Nantor's 12 mois :</strong> Remplacement ou assistance rapide auprès de notre boutique à Lomé.
+                  Les conditions de garantie éventuelles sont précisées lors de la confirmation de votre commande.
                 </p>
               </div>
 
