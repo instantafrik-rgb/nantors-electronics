@@ -62,7 +62,9 @@ export const createWebsiteOrder = onCall(
           !Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > 50) {
         throw new HttpsError("invalid-argument", "Un article contient une référence ou une quantité invalide.");
       }
-      const nextQuantity = (quantities.get(item.productId) ?? 0) + item.quantity;\n      if (nextQuantity > 50) throw new HttpsError("invalid-argument", "La quantité maximale par produit est de 50.");\n      quantities.set(item.productId, nextQuantity);
+      const nextQuantity = (quantities.get(item.productId) ?? 0) + item.quantity;
+      if (nextQuantity > 50) throw new HttpsError("invalid-argument", "La quantité maximale par produit est de 50.");
+      quantities.set(item.productId, nextQuantity);
     }
 
     const orderItems = [];
