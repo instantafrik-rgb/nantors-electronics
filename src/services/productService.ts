@@ -343,6 +343,9 @@ class ProductService {
     const product = await this.getProductById(id);
     if (!product) throw new Error("Produit non trouvé");
     const newState = !product.isAvailable;
+    if (newState && (!Number.isInteger(product.stockCount) || (product.stockCount ?? 0) <= 0)) {
+      throw new Error("Renseignez un stock positif avant de rendre ce produit disponible.");
+    }
     await this.updateProduct(id, { isAvailable: newState });
     return newState;
   }
