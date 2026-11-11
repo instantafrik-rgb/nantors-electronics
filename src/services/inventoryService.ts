@@ -4,7 +4,7 @@ export interface InventoryMovement {
   id: string;
   productId: string;
   productName: string;
-  type: "manual_in" | "manual_out";
+  type: "manual_in" | "manual_out" | "order_out" | "order_return";
   quantity: number;
   previousStock: number;
   newStock: number;
