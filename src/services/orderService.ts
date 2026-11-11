@@ -1,4 +1,4 @@
-import { getDb } from "./firebase";
+import { getDb, getFirebaseApp } from "./firebase";
 import type { CustomerOrder, OrderItem, OrderStatus } from "../types";
 
 async function database() {
@@ -8,6 +8,25 @@ async function database() {
 }
 
 export const orderService = {
+  async createWebsite(input: {
+    customerName: string;
+    customerPhone: string;
+    city: string;
+    address: string;
+    notes: string;
+    items: Array<{ productId: string; quantity: number }>;
+  }): Promise<{ orderId: string; orderNumber: string; subtotal: number }> {
+    const app = await getFirebaseApp();
+    if (!app) throw new Error("La commande en ligne n'est pas disponible : Firebase doit être configuré.");
+    const { getFunctions, httpsCallable } = await import("firebase/functions");
+    const callable = httpsCallable<typeof input, { orderId: string; orderNumber: string; subtotal: number }>(
+      getFunctions(app, "europe-west1"),
+      "createWebsiteOrder"
+    );
+    const response = await callable(input);
+    return response.data;
+  },
+
   async list(): Promise<CustomerOrder[]> {
     const db = await database();
     const { collection, getDocs, orderBy, query } = await import("firebase/firestore");
