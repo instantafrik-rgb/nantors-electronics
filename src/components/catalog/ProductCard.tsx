@@ -6,7 +6,7 @@
 import React, { useState } from "react";
 import { MessageSquare, ArrowUpRight, Zap, CheckCircle2 } from "lucide-react";
 import { Product } from "../../types";
-import { formatFCFA, generateWhatsAppOrderUrl } from "../../utils/formatters";
+import { formatFCFA } from "../../utils/formatters";
 
 interface ProductCardProps {
   product: Product;
@@ -32,8 +32,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             100,
         )
       : null;
-
-  const whatsappUrl = generateWhatsAppOrderUrl(product);
 
   const primaryFeature =
     product.features && product.features.length > 0
@@ -163,23 +161,20 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           </div>
 
           {/* Commander sur WhatsApp button */}
-          <a
-            href={whatsappUrl}
-            target={whatsappUrl.startsWith("#") ? undefined : "_blank"}
-            rel={
-              whatsappUrl.startsWith("#") ? undefined : "noopener noreferrer"
-            }
-            onClick={(e) => e.stopPropagation()}
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onOpenDetails(product); }}
+            disabled={!product.isAvailable}
             className={`inline-flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-[10px] sm:text-xs font-bold rounded-lg sm:rounded-xl transition-all duration-200 shrink-0 ${
               product.isAvailable
-                ? "bg-[#1769FF] hover:bg-[#0f56d9] text-white shadow-[0_2px_10px_rgba(255,107,0,0.25)] active:scale-95"
-                : "bg-slate-100 text-slate-400 cursor-not-allowed pointer-events-none"
+                ? "bg-[#1769FF] hover:bg-[#0f56d9] text-white shadow-[0_2px_10px_rgba(23,105,255,0.16)] active:scale-95"
+                : "bg-slate-100 text-slate-400 cursor-not-allowed"
             }`}
-            title="Commander directement sur WhatsApp"
+            title="Afficher la fiche et commander"
           >
-            <MessageSquare className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-[#111111] stroke-none shrink-0" />
+            <MessageSquare className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
             <span>Commander</span>
-          </a>
+          </button>
         </div>
       </div>
     </article>
