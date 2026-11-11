@@ -47,7 +47,7 @@ service cloud.firestore {
         'id', 'name', 'slug', 'category', 'categoryLabel', 
         'price', 'originalPrice', 'shortDescription', 'description', 
         'features', 'specifications', 'images', 'featured', 
-        'isAvailable', 'stockCount', 'badge', 'createdAt', 'updatedAt'
+        'isAvailable', 'stockCount', 'lowStockThreshold', 'sku', 'badge', 'createdAt', 'updatedAt'
       ];
       let requiredFields = ['name', 'slug', 'category', 'price', 'shortDescription', 'images', 'isAvailable'];
 
@@ -68,7 +68,9 @@ service cloud.firestore {
         (!('description' in data) || (data.description is string && data.description.size() <= 6000)) &&
         (!('features' in data) || (data.features is list && data.features.size() <= 20)) &&
         (!('specifications' in data) || (data.specifications is map && data.specifications.keys().size() <= 30)) &&
-        (!('stockCount' in data) || (data.stockCount is number && data.stockCount >= 0)) &&
+        (!('stockCount' in data) || (data.stockCount is int && data.stockCount >= 0)) &&
+        (!('lowStockThreshold' in data) || (data.lowStockThreshold is int && data.lowStockThreshold >= 0 && data.lowStockThreshold <= 100000)) &&
+        (!('sku' in data) || (data.sku is string && data.sku.size() <= 100)) &&
         (!('badge' in data) || (data.badge is string && data.badge.size() <= 50)) &&
         (!('id' in data) || (data.id is string && data.id.size() <= 100)) &&
         (!('createdAt' in data) || (data.createdAt is string && data.createdAt.size() <= 50)) &&
