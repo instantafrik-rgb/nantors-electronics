@@ -1,0 +1,6 @@
+# robots.txt pour Nantor's Electronics
+
+User-agent: *
+Allow: /
+
+Sitemap: https://nantors-electronics.web.app/sitemap.xml

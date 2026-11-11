@@ -1,0 +1,133 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // -------------------------------------------------------------
+    // 1. CONTRÔLE D'ACCÈS ADMINISTRATEUR UNIQUE ET EXCLUSIF
+    // -------------------------------------------------------------
+    // Seul le compte vérifié instantafrik@gmail.com est autorisé.
+    function isSuperAdmin() {
+      return request.auth != null && 
+        request.auth.token.email == "instantafrik@gmail.com" &&
+        request.auth.token.email_verified == true;
+    }
+
+    // -------------------------------------------------------------
+    // 2. VALIDATION DES CHEMINS ET FORMATS D'IMAGES
+    // -------------------------------------------------------------
+    function isValidImageUrl(url) {
+      return url is string && 
+        url.size() >= 5 && 
+        url.size() <= 1500 &&
+        (url.matches('^https?://.*') || url.matches('^/.*') || url.matches('^data:image/.*'));
+    }
+
+    // Valide tous les éléments de la liste images (jusqu'à 10 photos)
+    function areAllImagesValid(images) {
+      return images is list && 
+        images.size() >= 1 && 
+        images.size() <= 10 &&
+        isValidImageUrl(images[0]) &&
+        (images.size() < 2 || isValidImageUrl(images[1])) &&
+        (images.size() < 3 || isValidImageUrl(images[2])) &&
+        (images.size() < 4 || isValidImageUrl(images[3])) &&
+        (images.size() < 5 || isValidImageUrl(images[4])) &&
+        (images.size() < 6 || isValidImageUrl(images[5])) &&
+        (images.size() < 7 || isValidImageUrl(images[6])) &&
+        (images.size() < 8 || isValidImageUrl(images[7])) &&
+        (images.size() < 9 || isValidImageUrl(images[8])) &&
+        (images.size() < 10 || isValidImageUrl(images[9]));
+    }
+
+    // -------------------------------------------------------------
+    // 3. VALIDATION STRICTE DU SCHÉMA DU PRODUIT
+    // -------------------------------------------------------------
+    function isValidProduct(data) {
+      let allowedFields = [
+        'id', 'name', 'slug', 'category', 'categoryLabel', 
+        'price', 'originalPrice', 'shortDescription', 'description', 
+        'features', 'specifications', 'images', 'featured', 
+        'isAvailable', 'stockCount', 'badge', 'createdAt', 'updatedAt'
+      ];
+      let requiredFields = ['name', 'slug', 'category', 'price', 'shortDescription', 'images', 'isAvailable'];
+
+      return data.keys().hasAll(requiredFields) &&
+        data.keys().hasOnly(allowedFields) &&
+        // Validation des champs obligatoires
+        data.name is string && data.name.size() >= 2 && data.name.size() <= 200 &&
+        data.slug is string && data.slug.size() >= 2 && data.slug.size() <= 200 &&
+        data.category is string && data.category.size() >= 2 && data.category.size() <= 100 &&
+        data.price is number && data.price > 0 && data.price <= 50000000 &&
+        data.shortDescription is string && data.shortDescription.size() >= 2 && data.shortDescription.size() <= 600 &&
+        data.isAvailable is bool &&
+        areAllImagesValid(data.images) &&
+        // Validation des champs optionnels
+        (!('featured' in data) || data.featured is bool) &&
+        (!('categoryLabel' in data) || (data.categoryLabel is string && data.categoryLabel.size() <= 100)) &&
+        (!('originalPrice' in data) || (data.originalPrice is number && data.originalPrice >= data.price)) &&
+        (!('description' in data) || (data.description is string && data.description.size() <= 6000)) &&
+        (!('features' in data) || (data.features is list && data.features.size() <= 20)) &&
+        (!('specifications' in data) || (data.specifications is map && data.specifications.keys().size() <= 30)) &&
+        (!('stockCount' in data) || (data.stockCount is number && data.stockCount >= 0)) &&
+        (!('badge' in data) || (data.badge is string && data.badge.size() <= 50)) &&
+        (!('id' in data) || (data.id is string && data.id.size() <= 100)) &&
+        (!('createdAt' in data) || (data.createdAt is string && data.createdAt.size() <= 50)) &&
+        (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 50));
+    }
+
+    // -------------------------------------------------------------
+    // 4. VALIDATION DU FORMULAIRE DE CONTACT (INQUIRIES)
+    // -------------------------------------------------------------
+    function isValidInquiry(data) {
+      let allowedInquiryFields = ['fullName', 'phone', 'subject', 'message', 'createdAt'];
+      let requiredInquiryFields = ['fullName', 'phone', 'message'];
+
+      return data.keys().hasAll(requiredInquiryFields) &&
+        data.keys().hasOnly(allowedInquiryFields) &&
+        data.fullName is string && data.fullName.size() >= 2 && data.fullName.size() <= 100 &&
+        data.phone is string && data.phone.size() >= 5 && data.phone.size() <= 30 &&
+        data.message is string && data.message.size() >= 5 && data.message.size() <= 2000 &&
+        (!('subject' in data) || (data.subject is string && data.subject.size() <= 150)) &&
+        (!('createdAt' in data) || (data.createdAt is string && data.createdAt.size() <= 50));
+    }
+
+    // -------------------------------------------------------------
+    // 5. RÈGLES DE LA COLLECTION PRODUITS
+    // -------------------------------------------------------------
+    match /products/{productId} {
+      // Lecture publique autorisée UNIQUEMENT si le produit est disponible (isAvailable == true)
+      // L'administrateur unique peut tout lire (produits disponibles et en rupture/brouillon)
+      allow get: if resource.data.isAvailable == true || isSuperAdmin();
+      allow list: if resource.data.isAvailable == true || isSuperAdmin();
+
+      // Mutations réservées exclusivement à instantafrik@gmail.com
+      allow create: if isSuperAdmin() && isValidProduct(request.resource.data);
+      allow update: if isSuperAdmin() && isValidProduct(request.resource.data);
+      allow delete: if isSuperAdmin();
+    }
+
+    // -------------------------------------------------------------
+    // 6. RÈGLES DE LA COLLECTION CATÉGORIES
+    // -------------------------------------------------------------
+    match /categories/{categoryId} {
+      // Lecture publique autorisée pour l'arborescence du catalogue
+      allow read: if true;
+      allow create, update, delete: if isSuperAdmin();
+    }
+
+    // -------------------------------------------------------------
+    // 7. RÈGLES DE LA COLLECTION DEMANDES DE CONTACT
+    // -------------------------------------------------------------
+    match /inquiries/{inquiryId} {
+      allow create: if isValidInquiry(request.resource.data);
+      allow read, update, delete: if isSuperAdmin();
+    }
+
+    // -------------------------------------------------------------
+    // 8. VERROUILLAGE TOTAL DU RESTE PAR DÉFAUT
+    // -------------------------------------------------------------
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "Nantor's Electronics",
+  "description": "Site vitrine professionnel et catalogue d'accessoires de téléphonie et d'informatique haut de gamme avec commande WhatsApp et espace d'administration.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nantor's Electronics – Accessoires Téléphonie & Informatique</title>
+    <meta
+      name="description"
+      content="Catalogue officiel d'accessoires de téléphonie et d'informatique haut de gamme à Lomé. Chargeurs GaN, câbles renforcés, audio et commandes directes sur WhatsApp."
+    />
+    <meta name="theme-color" content="#111111" />
+
+    <!-- Preload LCP hero image (improves Largest Contentful Paint) -->
+    <link
+      rel="preload"
+      as="image"
+      href="/images/og-share-card-optimized.jpg"
+      fetchpriority="high"
+    />
+
+    <!-- OpenGraph Metadata for Rich Social Sharing -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Nantor's Electronics" />
+    <meta
+      property="og:title"
+      content="Nantor's Electronics – Accessoires Téléphonie & Informatique"
+    />
+    <meta
+      property="og:description"
+      content="Catalogue officiel d'accessoires de téléphonie et d'informatique haut de gamme à Lomé. Chargeurs GaN, câbles renforcés, audio et commandes directes sur WhatsApp."
+    />
+    <meta property="og:image" content="/images/og-share-card.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Nantor's Electronics - Boutique High-Tech & Accessoires Premium à Lomé"
+    />
+
+    <!-- Twitter / X Card Metadata -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Nantor's Electronics – Accessoires Téléphonie & Informatique"
+    />
+    <meta
+      name="twitter:description"
+      content="Catalogue officiel d'accessoires de téléphonie et d'informatique haut de gamme à Lomé. Chargeurs GaN, câbles renforcés, audio et commandes directes sur WhatsApp."
+    />
+    <meta name="twitter:image" content="/images/og-share-card.png" />
+
+    <!-- Dynamic canonical & og:url sync (uses runtime host to avoid hardcoding invented domains) -->
+    <script>
+      (function () {
+        try {
+          var origin = window.location.origin;
+          var path = window.location.pathname;
+          var fullUrl = origin + path;
+
+          var linkCanonical = document.createElement("link");
+          linkCanonical.rel = "canonical";
+          linkCanonical.href = fullUrl;
+          document.head.appendChild(linkCanonical);
+
+          var metaOgUrl = document.createElement("meta");
+          metaOgUrl.setAttribute("property", "og:url");
+          metaOgUrl.content = fullUrl;
+          document.head.appendChild(metaOgUrl);
+        } catch (e) {}
+      })();
+    </script>
+
+    <!-- Schema.org JSON-LD Structured Data for ElectronicsStore -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "ElectronicsStore",
+        "name": "Nantor's Electronics",
+        "description": "Boutique d'accessoires de téléphonie et informatique haut de gamme à Lomé, Togo. Chargeurs GaN, câbles tressés renforcés, audio et support WhatsApp.",
+        "image": "/images/og-share-card.jpg",
+        "currenciesAccepted": "XOF",
+        "paymentAccepted": "Cash, Mobile Money",
+        "priceRange": "$$",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Lomé",
+          "addressCountry": "TG"
+        },
+        "openingHoursSpecification": {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday"
+          ],
+          "opens": "08:30",
+          "closes": "19:00"
+        }
+      }
+    </script>
+
+    <!-- Favicon & Touch Icons -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+  </head>
+  <body
+    class="bg-[#111111] text-[#F3F0E9] antialiased selection:bg-[#FF6B00] selection:text-[#111111]"
+  >
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
