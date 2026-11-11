@@ -31,7 +31,7 @@ export const InventoryPanel: React.FC<{ products: Product[]; onRefresh: () => vo
     } catch (e) { setError(e instanceof Error ? e.message : "Mouvement impossible."); }
     finally { setBusy(false); }
   };
-  const lowStock = products.filter(p => (p.stockCount ?? 0) <= 3);
+  const lowStock = products.filter(p => (p.stockCount ?? 0) <= (p.lowStockThreshold ?? 3));
 
   return <section className="space-y-5">
     <header className="flex items-center justify-between gap-3"><div><p className="text-xs uppercase tracking-widest text-[#1769FF] font-bold">Suivi des quantités</p><h2 className="text-2xl font-bold text-slate-900">Stock & inventaire</h2><p className="text-sm text-slate-500">Les commandes confirmées déduisent automatiquement le stock.</p></div><button onClick={() => void load()} disabled={busy} className="rounded-xl border border-slate-200 bg-white p-3 text-slate-600"><RefreshCw className="h-4 w-4"/></button></header>
@@ -44,7 +44,7 @@ export const InventoryPanel: React.FC<{ products: Product[]; onRefresh: () => vo
         <label className="block text-xs font-semibold text-slate-600">Motif / note<input value={note} onChange={e => setNote(e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 p-3 text-sm" placeholder="Réapprovisionnement, casse, inventaire…"/></label>
         <button disabled={busy} onClick={() => void submit()} className="w-full rounded-xl bg-[#1769FF] p-3 text-sm font-semibold text-white disabled:opacity-50">{busy ? "Enregistrement…" : "Valider le mouvement"}</button>
       </div>
-      <div className="rounded-2xl border border-slate-200 bg-white p-5"><h3 className="mb-3 font-bold text-slate-900">Alertes de stock bas</h3>{lowStock.length ? <div className="space-y-2">{lowStock.map(p => <div key={p.id} className="flex items-center justify-between gap-3 rounded-xl bg-amber-50 p-3"><span className="text-sm font-medium text-slate-700">{p.name}</span><strong className="text-sm text-amber-700">{p.stockCount ?? 0} restant(s)</strong></div>)}</div> : <p className="text-sm text-slate-500">Aucune alerte calculée. Les seuils personnalisés seront ajoutés dans les paramètres de stock.</p>}</div>
+      <div className="rounded-2xl border border-slate-200 bg-white p-5"><h3 className="mb-3 font-bold text-slate-900">Alertes de stock bas</h3>{lowStock.length ? <div className="space-y-2">{lowStock.map(p => <div key={p.id} className="flex items-center justify-between gap-3 rounded-xl bg-amber-50 p-3"><span className="text-sm font-medium text-slate-700">{p.name}</span><strong className="text-sm text-amber-700">{p.stockCount ?? 0} restant(s)</strong></div>)}</div> : <p className="text-sm text-slate-500">Aucune alerte de stock bas pour le moment.</p>}</div>
     </div>
     <div className="rounded-2xl border border-slate-200 bg-white p-5"><h3 className="mb-3 font-bold text-slate-900">Historique des mouvements</h3>{!loaded && busy ? <p className="text-sm text-slate-500">Chargement…</p> : movements.length ? <div className="space-y-2">{movements.slice(0,30).map(m => {
         const incoming = m.type === "manual_in" || m.type === "order_return";
