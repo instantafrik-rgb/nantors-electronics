@@ -113,7 +113,7 @@ export const SystemConfigModal: React.FC<SystemConfigModalProps> = ({
                 </div>
                 <p className="text-[11px] text-[#888888] font-light">
                   {fbConfigured
-                    ? 'Variables Firebase détectées. La connexion réelle dépend aussi des règles et de l'accès au projet.'
+                    ? "Variables Firebase détectées. La connexion réelle dépend aussi des règles et de l'accès au projet."
                     : 'En attente de la clé API Firebase dans .env.'}
                 </p>
               </button>
