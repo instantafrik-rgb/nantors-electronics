@@ -95,19 +95,16 @@ class ProductService {
         try {
           const { collection, getDocs } = await import("firebase/firestore");
           const snapshot = await getDocs(collection(db, "categories"));
-          if (!snapshot.empty) {
-            return snapshot.docs.map(
-              (docSnap) =>
-                ({ id: docSnap.id, ...docSnap.data() }) as CategoryInfo,
-            );
-          }
-        } catch (err) {
-          console.warn(
-            "Erreur lecture categories Firestore, bascule locale:",
-            err,
+          return snapshot.docs.map(
+            (docSnap) =>
+              ({ id: docSnap.id, ...docSnap.data() }) as CategoryInfo,
           );
+        } catch (err) {
+          console.error("Erreur lecture catégories Firestore:", err);
+          throw new Error("Impossible de charger les catégories depuis Firestore. Vérifiez la configuration et les règles Firebase.");
         }
       }
+      throw new Error("Firebase est sélectionné mais Firestore n'est pas disponible.");
     }
 
     const raw = localStorage.getItem(LOCAL_STORAGE_CATEGORIES_KEY);
@@ -132,11 +129,9 @@ class ProductService {
 
           if (canIncludeUnavailable) {
             const snapshot = await getDocs(colRef);
-            if (!snapshot.empty) {
-              items = snapshot.docs.map(
-                (d) => ({ id: d.id, ...d.data() }) as Product,
-              );
-            }
+            items = snapshot.docs.map(
+              (d) => ({ id: d.id, ...d.data() }) as Product,
+            );
           } else {
             const q = query(colRef, where("isAvailable", "==", true));
             const snapshot = await getDocs(q);
@@ -147,11 +142,12 @@ class ProductService {
             }
           }
         } catch (err) {
-          console.warn("Erreur lecture Firestore, repli local sécurisé:", err);
-          items = this.getLocalProducts();
+          console.error("Erreur lecture produits Firestore:", err);
+          throw new Error("Impossible de charger les produits depuis Firestore. Les données locales de démonstration ne seront pas affichées.");
+
         }
       } else {
-        items = this.getLocalProducts();
+        throw new Error("Firebase est sélectionné mais Firestore n'est pas disponible.");
       }
     } else {
       items = this.getLocalProducts();
@@ -224,8 +220,11 @@ class ProductService {
             return { id: docSnap.id, ...docSnap.data() } as Product;
           }
         } catch (err) {
-          console.warn("Erreur lecture unitaire Firestore, repli local:", err);
+          console.error("Erreur lecture produit Firestore:", err);
+          throw new Error("Impossible de lire ce produit depuis Firestore.");
         }
+      } else {
+        throw new Error("Firebase est sélectionné mais Firestore n'est pas disponible.");
       }
     }
     const products = await this.getProducts({}, true);
@@ -258,12 +257,11 @@ class ProductService {
           await setDoc(doc(db, "products", newId), sanitized);
           return newProduct;
         } catch (err) {
-          console.warn(
-            "Erreur écriture Firestore (sauvegarde locale de secours):",
-            err,
-          );
+          console.error("Erreur écriture produit Firestore:", err);
+          throw new Error("Le produit n'a pas été enregistré dans Firestore. Aucune copie locale de secours n'a été créée.");
         }
       }
+      throw new Error("Firebase est sélectionné mais Firestore n'est pas disponible.");
     }
 
     const local = this.getLocalProducts();
@@ -292,12 +290,11 @@ class ProductService {
           const updatedSnap = await getDoc(docRef);
           return { id, ...updatedSnap.data() } as Product;
         } catch (err) {
-          console.warn(
-            "Erreur modification Firestore (sauvegarde locale de secours):",
-            err,
-          );
+          console.error("Erreur modification produit Firestore:", err);
+          throw new Error("La modification n'a pas été enregistrée dans Firestore. Aucune copie locale de secours n'a été créée.");
         }
       }
+      throw new Error("Firebase est sélectionné mais Firestore n'est pas disponible.");
     }
 
     const local = this.getLocalProducts();
@@ -319,12 +316,11 @@ class ProductService {
           await deleteDoc(doc(db, "products", id));
           return;
         } catch (err) {
-          console.warn(
-            "Erreur suppression Firestore (suppression locale de secours):",
-            err,
-          );
+          console.error("Erreur suppression produit Firestore:", err);
+          throw new Error("La suppression n'a pas été effectuée dans Firestore.");
         }
       }
+      throw new Error("Firebase est sélectionné mais Firestore n'est pas disponible.");
     }
 
     const local = this.getLocalProducts();
