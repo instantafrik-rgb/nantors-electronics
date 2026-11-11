@@ -23,6 +23,7 @@ import { orderService } from '../../services/orderService';
 import {
   formatFCFA,
   generateWhatsAppProductQuestionUrl,
+  generateWhatsAppOrderUrl,
   isWhatsAppConfigured,
 } from '../../utils/formatters';
 
