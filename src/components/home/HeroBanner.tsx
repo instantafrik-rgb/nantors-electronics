@@ -56,10 +56,9 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
 
             {/* Subtitle */}
             <p className="text-base sm:text-lg text-slate-600 leading-relaxed max-w-2xl font-light">
-              Chargeurs ultra-rapides GaN, câbles blindés incassables, stations
-              d'accueil MagSafe et adaptateurs professionnels. Commandez
-              directement sur WhatsApp et réglez en toute sécurité à la
-              livraison à Lomé et dans tout le Togo.
+              Retrouvez des accessoires pour smartphones, ordinateurs et équipements
+              du quotidien. Parcourez le catalogue, échangez avec notre équipe
+              sur WhatsApp et choisissez le paiement à la livraison à Lomé.
             </p>
 
             {/* Action Buttons */}
