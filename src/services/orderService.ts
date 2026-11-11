@@ -43,37 +43,50 @@ export const orderService = {
     if (!input.customerName.trim() || !input.customerPhone.trim() || !input.items.length) {
       throw new Error("Le nom, le téléphone et au moins un article sont obligatoires.");
     }
-    if (input.items.some((item) => !Number.isInteger(item.quantity) || item.quantity < 1 || item.unitPrice < 0)) {
-      throw new Error("Un article contient un prix ou une quantité invalide.");
+    if (input.items.some((item) => !Number.isInteger(item.quantity) || item.quantity < 1)) {
+      throw new Error("Chaque quantité doit être un entier positif.");
     }
-    const { collection, doc, getDoc, runTransaction } = await import("firebase/firestore");
-    const normalizedItems: OrderItem[] = [];
+    const { collection, doc, runTransaction } = await import("firebase/firestore");
+    const orderRef = doc(collection(db, "orders"));
     const quantities = new Map<string, number>();
     for (const item of input.items) {
       quantities.set(item.productId, (quantities.get(item.productId) ?? 0) + item.quantity);
     }
-    for (const [productId, quantity] of quantities.entries()) {
-      const productSnapshot = await getDoc(doc(db, "products", productId));
-      if (!productSnapshot.exists()) throw new Error("Produit introuvable : " + productId);
-      const product = productSnapshot.data();
-      if (product.isAvailable !== true) throw new Error("Produit indisponible : " + product.name);
-      normalizedItems.push({
-        productId,
-        productName: String(product.name),
-        unitPrice: Number(product.price),
-        quantity
-      });
-    }
-    const subtotal = normalizedItems.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
-    const now = new Date().toISOString();
-    const orderRef = doc(collection(db, "orders"));
+
     await runTransaction(db, async (transaction) => {
+      const normalizedItems: OrderItem[] = [];
+      for (const [productId, quantity] of quantities.entries()) {
+        const productSnapshot = await transaction.get(doc(db, "products", productId));
+        if (!productSnapshot.exists()) throw new Error("Produit introuvable : " + productId);
+        const product = productSnapshot.data();
+        if (product.isAvailable !== true) throw new Error("Produit indisponible : " + product.name);
+        if (!Number.isSafeInteger(product.price) || product.price < 0) {
+          throw new Error("Prix invalide pour le produit : " + product.name);
+        }
+        normalizedItems.push({
+          productId,
+          productName: String(product.name),
+          unitPrice: product.price,
+          quantity
+        });
+      }
+
+      const subtotal = normalizedItems.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
+      if (!Number.isSafeInteger(subtotal)) throw new Error("Le total de la commande dépasse la limite autorisée.");
+      const now = new Date().toISOString();
       transaction.set(orderRef, {
-        ...input, items: normalizedItems,
+        source: input.source,
+        customerName: input.customerName.trim(),
+        customerPhone: input.customerPhone.trim(),
+        city: input.city.trim(),
+        address: input.address.trim(),
+        notes: input.notes.trim(),
+        items: normalizedItems,
         orderNumber: "NE-" + orderRef.id.slice(-8).toUpperCase(),
         subtotal, deliveryFee: null, total: null,
         status: "pending_confirmation", paymentStatus: "unpaid",
-        paymentMethod: "cash_on_delivery", createdAt: now, updatedAt: now
+        paymentMethod: "cash_on_delivery", createdAt: now, updatedAt: now,
+        createdBy: "admin", schemaVersion: 1
       });
     });
   },
@@ -131,7 +144,13 @@ export const orderService = {
           const remaining = check.stock - check.item.quantity;
           transaction.update(check.productRef, { stockCount: remaining, isAvailable: remaining > 0, updatedAt: new Date().toISOString() });
           const movementRef = doc(collection(db, "inventory_movements"));
-          transaction.set(movementRef, { productId: check.item.productId, productName: check.item.productName, type: "order_out", quantity: check.item.quantity, orderId, createdAt: new Date().toISOString() });
+          transaction.set(movementRef, {
+            productId: check.item.productId, productName: check.item.productName,
+            type: "order_out", quantity: check.item.quantity,
+            previousStock: check.stock, newStock: remaining,
+            note: `Déduction à la confirmation de ${order.orderNumber}`,
+            orderId, createdAt: new Date().toISOString()
+          });
         }
       } else if (status === "confirmed" && order.status !== "pending_confirmation") {
         throw new Error("Cette commande ne peut pas être confirmée depuis son statut actuel.");
@@ -148,7 +167,13 @@ export const orderService = {
           const restored = check.stock + check.item.quantity;
           transaction.update(check.productRef, { stockCount: restored, isAvailable: restored > 0, updatedAt: new Date().toISOString() });
           const movementRef = doc(collection(db, "inventory_movements"));
-          transaction.set(movementRef, { productId: check.item.productId, productName: check.item.productName, type: "order_return", quantity: check.item.quantity, orderId, createdAt: new Date().toISOString() });
+          transaction.set(movementRef, {
+            productId: check.item.productId, productName: check.item.productName,
+            type: "order_return", quantity: check.item.quantity,
+            previousStock: check.stock, newStock: restored,
+            note: `Restitution après annulation de ${order.orderNumber}`,
+            orderId, createdAt: new Date().toISOString()
+          });
         }
       }
       transaction.update(orderRef, { status, updatedAt: new Date().toISOString() });
