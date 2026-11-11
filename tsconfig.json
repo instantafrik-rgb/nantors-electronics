@@ -29,6 +29,7 @@
   "exclude": [
     "dist",
     "functions",
-    "node_modules"
+    "node_modules",
+    "src/services/authService.backup.ts"
   ]
 }
