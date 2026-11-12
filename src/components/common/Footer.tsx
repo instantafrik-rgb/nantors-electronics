@@ -68,10 +68,12 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectCategory }) 
         {/* Brand Column */}
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-slate-900 border border-slate-200">
-              <span className="font-display font-extrabold text-lg">
-                N<span className="text-[#1769FF]">.</span>
-              </span>
+            <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-slate-900 border border-slate-200 overflow-hidden">
+              {config.shop.logoUrl ? (
+                <img src={config.shop.logoUrl} alt={config.shop.name} className="h-full w-full object-contain p-1" />
+              ) : (
+                <span className="font-display font-extrabold text-lg">N<span className="text-[#1769FF]">.</span></span>
+              )}
             </div>
             <span className="font-display font-bold text-xl text-slate-900">
               {config.shop.name}
