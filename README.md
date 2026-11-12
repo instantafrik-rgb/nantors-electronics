@@ -50,23 +50,23 @@ Le projet Firebase par défaut est défini dans `.firebaserc`. Vérifier qu'il s
 1. Activer Firebase Authentication avec Google.
 2. Conserver le même compte propriétaire autorisé dans `src/config/environment.ts`, `firestore.rules` et `functions/src/index.ts` (actuellement `instantafrik@gmail.com`).
 3. Configurer les variables Firebase dans l'environnement de déploiement.
-4. Déployer les règles Firestore :
-
-```bash
-firebase deploy --only firestore:rules
-```
-
-5. Déployer la fonction callable qui enregistre les commandes du site :
+4. Vérifier les règles et compiler/tester les Cloud Functions :
 
 ```bash
 cd functions
 npm install
 npm run build
+npm test
 cd ..
-firebase deploy --only functions:createWebsiteOrder
 ```
 
-La fonction `createWebsiteOrder` relit les prix et les noms produits depuis Firestore. Elle enregistre les demandes web au statut « À confirmer » et ne retire pas de stock. Le stock est vérifié et déduit dans une transaction uniquement lorsque le propriétaire confirme la commande.
+5. Déployer les règles Firestore et l'ensemble des fonctions serveur :
+
+```bash
+firebase deploy --only firestore:rules,functions
+```
+
+Les fonctions comprennent notamment `createWebsiteOrder` (demande web recalculée côté serveur), `createManualOrder`, `createCatalogProduct` (création et stock initial atomiques), `deleteCatalogProduct`, `setOrderDeliveryFee`, `updateOrderStatus`, `markOrderPaid` et `adjustInventoryStock`. Les commandes, les mouvements de stock et la création/suppression de produits ne peuvent pas être écrits directement depuis le navigateur.
 
 Les règles Firestore gardent les commandes et les mouvements de stock privés au compte administrateur. Les écritures publiques de commandes passent par la fonction serveur, jamais par un accès Firestore direct du navigateur.
 
