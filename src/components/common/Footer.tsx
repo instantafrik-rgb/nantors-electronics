@@ -27,7 +27,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectCategory, ca
   const footerCategories = categories.length ? categories.slice(0, 5) : fallbackCategories;
 
   return (
-    <footer className="bg-white text-slate-500 border-t border-slate-200 pt-16 pb-12">
+    <footer className="nantor-footer bg-white text-slate-500 border-t border-slate-200 pt-16 pb-12">
       {/* 4 Trust Highlights Strip */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 mb-12 border-b border-slate-200">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
