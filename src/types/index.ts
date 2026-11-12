@@ -32,8 +32,6 @@ export interface Product {
   badge?: string; // e.g. "Best-seller", "Nouveau", "Promo"
   createdAt: string;
   updatedAt: string;
-  deliveredAt?: string;
-  paidAt?: string;
 }
 
 export interface CategoryInfo {
