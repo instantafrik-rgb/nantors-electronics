@@ -91,4 +91,6 @@ export interface CustomerOrder {
   notes: string;
   createdAt: string;
   updatedAt: string;
+  deliveredAt?: string;
+  paidAt?: string;
 }
