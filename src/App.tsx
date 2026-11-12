@@ -70,6 +70,7 @@ export default function App() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<CategoryInfo[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dataLoadError, setDataLoadError] = useState("");
 
   // Filters state for catalog
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -112,6 +113,7 @@ export default function App() {
   // Load products and categories with security-aware permissions
   const loadData = useCallback(async () => {
     try {
+      setDataLoadError("");
       const isSuperAdmin = authService.isCurrentFirebaseUserSuperAdmin();
       const [loadedCats, loadedProds] = await Promise.all([
         productService.getCategories(),
@@ -121,41 +123,40 @@ export default function App() {
       setProducts(loadedProds);
     } catch (err) {
       console.error("Erreur chargement données:", err);
+      setDataLoadError("Le catalogue ne peut pas être chargé depuis la source configurée. Vérifiez la connexion Firebase et les règles Firestore. Aucune commande ne sera enregistrée localement.");
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
+    let unsubscribe: (() => void) | undefined;
     loadData();
 
-    // Ne pas initialiser Firebase Auth au mount pour les visiteurs anonymes.
-    // On l'initialise seulement si :
-    // - l'URL contient #admin (intention admin explicite)
     const shouldInitAuth = window.location.hash.includes("admin");
+    const subscribeToAuth = () => {
+      if (cancelled) return;
+      unsubscribe = authService.subscribe((user) => {
+        const isSuperAdmin = authService.isCurrentFirebaseUserSuperAdmin();
+        setCurrentUser(user);
+        if (!isSuperAdmin) setActivePage((prev) => (prev === "admin" ? "home" : prev));
+        loadData();
+      });
+    };
 
     if (shouldInitAuth) {
-      authService.initSessionCheck().then(() => {
-        const unsubscribe = authService.subscribe((user) => {
-          const isSuperAdmin = authService.isCurrentFirebaseUserSuperAdmin();
-          setCurrentUser(user);
-
-          if (!isSuperAdmin) {
-            setActivePage((prev) => (prev === "admin" ? "home" : prev));
-          }
-
-          loadData();
-        });
-        return () => unsubscribe();
+      void authService.initSessionCheck().then(subscribeToAuth).catch((error) => {
+        console.error("Initialisation Firebase Auth impossible:", error);
       });
     } else {
-      // Visiteur anonyme : on s'abonne juste au state local (restera null)
-      // sans toucher à Firebase
-      const unsubscribe = authService.subscribe((user) => {
-        setCurrentUser(user);
-      });
-      return () => unsubscribe();
+      unsubscribe = authService.subscribe((user) => setCurrentUser(user));
     }
+
+    return () => {
+      cancelled = true;
+      unsubscribe?.();
+    };
   }, [loadData]);
 
   // Synchronize navigation state with browser history (back/forward buttons)
@@ -409,7 +410,7 @@ export default function App() {
           return false;
 
         // Stock filter
-        if (inStockOnly && p.stockCount !== undefined && p.stockCount <= 0)
+        if (inStockOnly && (!Number.isSafeInteger(p.stockCount) || (p.stockCount ?? 0) <= 0))
           return false;
 
         // 3. Budget filters: moins de 15 000 FCFA, 15 000 à 30 000 FCFA, plus de 30 000 FCFA
@@ -467,7 +468,7 @@ export default function App() {
   const isSuperAdmin = authService.isCurrentFirebaseUserSuperAdmin();
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#111111] text-[#F3F0E9] selection:bg-[#FF6B00] selection:text-white">
+    <div className="min-h-screen flex flex-col bg-[#afbdc5] text-slate-900 selection:bg-[#1769FF] selection:text-white">
       {/* Universal Top Header */}
       <Header
         activePage={activePage}
@@ -483,6 +484,8 @@ export default function App() {
           handleNavigate("catalog");
         }}
       />
+
+      {dataLoadError && <div role="alert" className="mx-auto mt-3 w-[min(1200px,calc(100%-2rem))] rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">{dataLoadError}</div>}
 
       {/* Main Content Area */}
       <main className="flex-1">

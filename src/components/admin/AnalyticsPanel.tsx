@@ -11,12 +11,12 @@ export const AnalyticsPanel: React.FC<{products: Product[]}> = ({products}) => {
   const [error,setError]=useState("");
   const [loading,setLoading]=useState(true);
   useEffect(()=>{orderService.list().then(setOrders).catch(e=>setError(e instanceof Error?e.message:"Statistiques indisponibles.")).finally(()=>setLoading(false));},[]);
-  const scoped=useMemo(()=>{
-    if(period==="all") return orders;
-    const cutoff=Date.now()-Number(period)*86400000;
-    return orders.filter(o=>new Date(o.createdAt).getTime()>=cutoff);
-  },[orders,period]);
-  const paid=scoped.filter(o=>o.status==="delivered"&&o.paymentStatus==="paid_on_delivery");
+  const cutoff=period==="all"?0:Date.now()-Number(period)*86400000;
+  const scoped=useMemo(()=>orders.filter(o=>new Date(o.createdAt).getTime()>=cutoff),[orders,cutoff]);
+  const paid=useMemo(()=>orders.filter(o=>
+    o.status==="delivered"&&o.paymentStatus==="paid_on_delivery"&&
+    new Date(o.paidAt??o.updatedAt??o.createdAt).getTime()>=cutoff
+  ),[orders,cutoff]);
   const revenue=paid.reduce((sum,o)=>sum+(o.total??0),0);
   const topProducts=useMemo(()=>{
     const map=new Map<string,{name:string;quantity:number;revenue:number}>();
@@ -29,7 +29,7 @@ export const AnalyticsPanel: React.FC<{products: Product[]}> = ({products}) => {
   const sourceCounts=["website","whatsapp","admin"].map(source=>({source,count:scoped.filter(o=>o.source===source).length}));
   const lowStock=products.filter(p=>(p.stockCount??0)<=(p.lowStockThreshold??0));
   const exportCsv=()=>{
-    const rows=[["Commande","Date","Client","Téléphone","Source","Statut","Paiement","Sous-total","Livraison","Total"],...scoped.map(o=>[o.orderNumber,o.createdAt,o.customerName,o.customerPhone,o.source,o.status,o.paymentStatus,String(o.subtotal),o.deliveryFee===null?"":String(o.deliveryFee),o.total===null?"":String(o.total)])];
+    const rows=[["Commande","Date de création","Date de paiement","Client","Téléphone","Source","Statut","Paiement","Sous-total","Livraison","Total"],...scoped.map(o=>[o.orderNumber,o.createdAt,o.paidAt??"",o.customerName,o.customerPhone,o.source,o.status,o.paymentStatus,String(o.subtotal),o.deliveryFee===null?"":String(o.deliveryFee),o.total===null?"":String(o.total)])];
     const csv=rows.map(row=>row.map(value=>`"${String(value).replace(/"/g,'""')}"`).join(";")).join("\n");
     const url=URL.createObjectURL(new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"}));
     const link=document.createElement("a");link.href=url;link.download="nantors-rapport-commandes.csv";link.click();URL.revokeObjectURL(url);
