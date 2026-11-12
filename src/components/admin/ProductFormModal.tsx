@@ -49,7 +49,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
   const [featured, setFeatured] = useState(false);
   const [isAvailable, setIsAvailable] = useState(false);
   const [stockCount, setStockCount] = useState("0");
-  const [lowStockThreshold, setLowStockThreshold] = useState(String(config.shop.stockAlertThreshold));
+  const [lowStockThreshold, setLowStockThreshold] = useState("");
   const [sku, setSku] = useState("");
   const [badge, setBadge] = useState("");
   const [previewMode, setPreviewMode] = useState(false);
@@ -79,7 +79,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
 
       setFeatured(productToEdit.featured);
       setStockCount(String(productToEdit.stockCount ?? 0));
-      setLowStockThreshold(String(productToEdit.lowStockThreshold ?? config.shop.stockAlertThreshold));
+      setLowStockThreshold(productToEdit.lowStockThreshold === undefined ? "" : String(productToEdit.lowStockThreshold));
       setSku(productToEdit.sku || "");
       setIsAvailable(productToEdit.isAvailable);
       setBadge(productToEdit.badge || "");
@@ -91,12 +91,12 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       setOriginalPrice("");
       setShortDescription("");
       setDescription("");
-      setImages(["/images/product_gan_charger_1793629796501.jpg"]);
+      setImages([]);
       setFeatures([""]);
       setSpecKeys([""]);
       setSpecVals([""]);
       setStockCount("0");
-      setLowStockThreshold(String(config.shop.stockAlertThreshold));
+      setLowStockThreshold("");
       setSku("");
       setFeatured(false);
       setIsAvailable(false);
@@ -169,8 +169,13 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       setError("Le stock doit être un nombre entier positif ou nul.");
       return;
     }
-    if (!Number.isSafeInteger(Number(lowStockThreshold)) || Number(lowStockThreshold) < 0) {
-      setError("Le seuil d'alerte doit être un entier positif ou nul.");
+    if (lowStockThreshold.trim() !== "" &&
+        (!Number.isSafeInteger(Number(lowStockThreshold)) || Number(lowStockThreshold) < 0 || Number(lowStockThreshold) > 100000)) {
+      setError("Le seuil spécifique doit être un entier compris entre 0 et 100 000, ou rester vide pour utiliser le seuil global.");
+      return;
+    }
+    if (images.length === 0 || images.length > 10) {
+      setError("Ajoutez entre 1 et 10 photos hébergées avant d'enregistrer le produit.");
       return;
     }
     if (originalPrice && (!Number.isSafeInteger(Number(originalPrice)) || Number(originalPrice) < Number(price))) {
@@ -195,10 +200,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       .replace(/(^-|-$)+/g, "");
 
     const cleanFeatures = features.filter((f) => f.trim().length > 0);
-    const validImages =
-      images.length > 0
-        ? images
-        : ["/images/product_gan_charger_1793629796501.jpg"];
+    const validImages = images;
 
     setSaving(true);
     setError(null);
@@ -219,7 +221,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
           featured,
           isAvailable,
           stockCount: Number(stockCount),
-          lowStockThreshold: Number(lowStockThreshold),
+          lowStockThreshold: lowStockThreshold.trim() ? Number(lowStockThreshold) : undefined,
           sku: sku.trim() || undefined,
           badge: badge.trim() || undefined,
         },
@@ -452,9 +454,9 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                 <p className="mt-1 text-[11px] text-[#777777]">{productToEdit ? "Pour modifier le stock, utilisez l'onglet Stock afin d'enregistrer un mouvement." : "Le stock initial est saisi à la création; les changements suivants passent par l'onglet Stock."}</p>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-[#cccccc] mb-1">Seuil d'alerte de stock</label>
-                <input type="number" min="0" step="1" value={lowStockThreshold} onChange={(e) => setLowStockThreshold(e.target.value)} className="w-full text-xs px-3.5 py-2.5 rounded-xl bg-[#1c1c1c] text-[#F3F0E9] border border-white/10 focus:outline-none focus:border-[#1769FF] font-mono" />
-                <p className="mt-1 text-[11px] text-[#777777]">Une alerte apparaît lorsque le stock atteint ce seuil.</p>
+                <label className="block text-xs font-semibold text-[#cccccc] mb-1">Seuil spécifique (optionnel)</label>
+                <input type="number" min="0" max="100000" step="1" value={lowStockThreshold} placeholder={`Global (${config.shop.stockAlertThreshold})`} onChange={(e) => setLowStockThreshold(e.target.value)} className="w-full text-xs px-3.5 py-2.5 rounded-xl bg-[#1c1c1c] text-[#F3F0E9] border border-white/10 focus:outline-none focus:border-[#1769FF] font-mono" />
+                <p className="mt-1 text-[11px] text-[#777777]">Laissez vide pour utiliser le seuil global défini dans Paramètres.</p>
               </div>
               </div>
 
