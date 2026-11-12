@@ -161,11 +161,11 @@ const ProductDetailContent: React.FC<{
 
   return (
     <div 
-      className="fixed inset-0 z-50 bg-slate-900/55 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-y-auto"
+      className="nantor-product-modal-overlay fixed inset-0 z-50 bg-slate-900/55 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-y-auto"
       onClick={onClose}
     >
       <div 
-        className="relative w-full max-w-4xl bg-white rounded-3xl shadow-[0_25px_60px_rgba(0,0,0,0.85)] border border-slate-200 overflow-hidden flex flex-col my-auto text-slate-900"
+        className="nantor-product-modal relative w-full max-w-5xl bg-white rounded-3xl shadow-[0_25px_60px_rgba(0,0,0,0.18)] border border-white overflow-hidden flex flex-col my-auto text-slate-900"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
@@ -370,7 +370,7 @@ const ProductDetailContent: React.FC<{
                     {compatibilitySpecs.map(([k, v], idx) => (
                       <p key={`spec-${idx}`} className="flex items-start gap-1.5 text-xs text-slate-700">
                         <Check className="w-3.5 h-3.5 text-[#1769FF] shrink-0 mt-0.5" />
-                        <span><strong className="text-white">{k} :</strong> {v}</span>
+                        <span><strong className="text-slate-900">{k} :</strong> {v}</span>
                       </p>
                     ))}
                   </div>
