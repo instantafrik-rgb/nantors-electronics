@@ -4,6 +4,7 @@
  */
 
 import { getDb, isFirebaseConfigured } from "./firebase";
+import { callCloudFunction } from "./cloudFunctions";
 import { authService } from "./authService";
 import { INITIAL_CATEGORIES, INITIAL_PRODUCTS } from "../data/seedProducts";
 import { CategoryInfo, Product, CatalogFilter } from "../types";
@@ -247,19 +248,15 @@ class ProductService {
     };
 
     if (this.dataSource === "firebase") {
-      const db = await getDb();
-      if (db) {
-        try {
-          const { doc, setDoc } = await import("firebase/firestore");
-          const sanitized = sanitizeForFirestore(newProduct);
-          await setDoc(doc(db, "products", newId), sanitized);
-          return newProduct;
-        } catch (err) {
-          console.error("Erreur écriture produit Firestore:", err);
-          throw new Error("Le produit n'a pas été enregistré dans Firestore. Aucune copie locale de secours n'a été créée.");
-        }
+      try {
+        return await callCloudFunction<Record<string, unknown>, Product>(
+          "createCatalogProduct",
+          sanitizeForFirestore(newProduct),
+        );
+      } catch (err) {
+        console.error("Erreur création produit Firestore:", err);
+        throw new Error(err instanceof Error ? err.message : "Le produit n'a pas été enregistré dans Firestore.");
       }
-      throw new Error("Firebase est sélectionné mais Firestore n'est pas disponible.");
     }
 
     const local = this.getLocalProducts();
@@ -284,8 +281,11 @@ class ProductService {
       const db = await getDb();
       if (db) {
         try {
-          const { doc, updateDoc, getDoc } = await import("firebase/firestore");
+          const { doc, updateDoc, getDoc, deleteField } = await import("firebase/firestore");
           const sanitized = sanitizeForFirestore(payloadWithTime);
+          if (Object.prototype.hasOwnProperty.call(updates, "lowStockThreshold") && updates.lowStockThreshold === undefined) {
+            sanitized.lowStockThreshold = deleteField();
+          }
           const docRef = doc(db, "products", id);
           await updateDoc(docRef, sanitized);
           const updatedSnap = await getDoc(docRef);
@@ -310,30 +310,13 @@ class ProductService {
 
   public async deleteProduct(id: string): Promise<void> {
     if (this.dataSource === "firebase") {
-      const db = await getDb();
-      if (db) {
-        try {
-          const { collection, doc, deleteDoc, getDocs, query, where, limit } = await import("firebase/firestore");
-          const [ordersSnapshot, movementSnapshot] = await Promise.all([
-            getDocs(collection(db, "orders")),
-            getDocs(query(collection(db, "inventory_movements"), where("productId", "==", id), limit(1))),
-          ]);
-          const hasOrderHistory = ordersSnapshot.docs.some((orderDoc) =>
-            Array.isArray(orderDoc.data().items) &&
-            orderDoc.data().items.some((item: any) => item.productId === id)
-          );
-          if (hasOrderHistory || !movementSnapshot.empty) {
-            throw new Error("Ce produit possède un historique de commandes ou de stock. Masquez-le au lieu de le supprimer afin de préserver les archives.");
-          }
-          await deleteDoc(doc(db, "products", id));
-          return;
-        } catch (err) {
-          if (err instanceof Error && err.message.startsWith("Ce produit possède")) throw err;
-          console.error("Erreur suppression produit Firestore:", err);
-          throw new Error("La suppression n'a pas été effectuée dans Firestore.");
-        }
+      try {
+        await callCloudFunction("deleteCatalogProduct", { productId: id });
+        return;
+      } catch (err) {
+        console.error("Erreur suppression produit Firestore:", err);
+        throw new Error(err instanceof Error ? err.message : "La suppression du produit n'a pas été effectuée.");
       }
-      throw new Error("Firebase est sélectionné mais Firestore n'est pas disponible.");
     }
 
     const local = this.getLocalProducts();
