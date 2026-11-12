@@ -34,7 +34,6 @@ Variables Firebase nécessaires :
 Variables boutique :
 
 - `VITE_WHATSAPP_NUMBER` : numéro au format international, chiffres uniquement (ex. 228XXXXXXXX).
-- `VITE_ADMIN_EMAIL` : adresse Google unique autorisée à accéder à l'administration.
 
 Variables Cloudinary pour les photos produits :
 
@@ -49,7 +48,7 @@ Sans Firebase configuré, le catalogue peut fonctionner en mode local de démons
 Le projet Firebase par défaut est défini dans `.firebaserc`. Vérifier qu'il s'agit bien du projet voulu avant tout déploiement.
 
 1. Activer Firebase Authentication avec Google.
-2. Vérifier l'adresse administrateur autorisée dans `VITE_ADMIN_EMAIL` et dans `firestore.rules`.
+2. Conserver le même compte propriétaire autorisé dans `src/config/environment.ts`, `firestore.rules` et `functions/src/index.ts` (actuellement `instantafrik@gmail.com`).
 3. Configurer les variables Firebase dans l'environnement de déploiement.
 4. Déployer les règles Firestore :
 
