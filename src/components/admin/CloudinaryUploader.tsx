@@ -35,34 +35,33 @@ export const CloudinaryUploader: React.FC<CloudinaryUploaderProps> = ({ onImageU
       setUploadSuccess(true);
       setTimeout(() => setUploadSuccess(false), 3000);
       if (fileInputRef.current) fileInputRef.current.value = '';
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.warn('Cloudinary upload error:', err);
-      // If preset isn't configured in production yet, read as local base64 preview or report clear error
-      try {
-        const reader = new FileReader();
-        reader.onload = (readEvent) => {
-          if (readEvent.target?.result) {
-            onImageUploaded(readEvent.target.result as string);
-            setUploadSuccess(true);
-            setTimeout(() => setUploadSuccess(false), 3000);
-          }
-        };
-        reader.readAsDataURL(file);
-        setUploadError(`Note: Téléversé en aperçu local (Cloudinary preset '${info.uploadPreset}' nécessite activation).`);
-      } catch {
-        setUploadError(err.message || 'Erreur lors du téléversement');
-      }
+      setUploadError(err instanceof Error
+        ? err.message
+        : "Le téléversement Cloudinary a échoué. Aucune image locale n'a été enregistrée.");
+      if (fileInputRef.current) fileInputRef.current.value = '';
     } finally {
       setUploading(false);
     }
   };
 
   const handleAddDirectUrl = () => {
-    if (!directUrl.trim()) return;
-    onImageUploaded(directUrl.trim());
-    setDirectUrl('');
-    setUploadSuccess(true);
-    setTimeout(() => setUploadSuccess(false), 2000);
+    const candidate = directUrl.trim();
+    if (!candidate) return;
+    try {
+      const parsed = new URL(candidate);
+      if (parsed.protocol !== 'https:') {
+        throw new Error("L'image doit être hébergée sur une adresse HTTPS sécurisée.");
+      }
+      onImageUploaded(parsed.toString());
+      setDirectUrl('');
+      setUploadError(null);
+      setUploadSuccess(true);
+      setTimeout(() => setUploadSuccess(false), 2000);
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : "URL d'image invalide.");
+    }
   };
 
   return (
@@ -99,7 +98,7 @@ export const CloudinaryUploader: React.FC<CloudinaryUploaderProps> = ({ onImageU
             type="file"
             ref={fileInputRef}
             onChange={handleFileChange}
-            accept="image/png, image/jpeg, image/webp, image/jpg"
+            accept="image/png, image/jpeg, image/webp, image/jpg, image/avif"
             className="hidden"
             id="cloudinary-file-input"
             disabled={uploading}
