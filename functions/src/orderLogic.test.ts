@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   OrderValidationError, assertPaymentAllowed, assertStatusTransition, buildOrderItems,
-  calculateSubtotal, computeStockAdjustments, isSameIdempotentOrder, normalizeRequestedItems,
+  calculateSubtotal, calculateOrderTotalWithDeliveryFee, computeStockAdjustments, isSameIdempotentOrder, normalizeRequestedItems,
   normalizeStoredOrderItems, validateRequestId,
 } from "./orderLogic.js";
 
@@ -51,4 +51,37 @@ test("n'enregistre le paiement qu'après livraison", () => {
   assert.equal(assertPaymentAllowed("delivered", "unpaid", 25000), true);
   assert.equal(assertPaymentAllowed("delivered", "paid_on_delivery", 25000), false);
   assert.throws(() => assertPaymentAllowed("delivered", "unpaid", null), OrderValidationError);
+});
+
+
+test("refuse une modification de frais basée sur une version de commande périmée", () => {
+  const currentUpdatedAt = "2026-11-12T19:00:00.000Z";
+  assert.equal(calculateOrderTotalWithDeliveryFee({
+    status: "pending_confirmation",
+    currentUpdatedAt,
+    expectedUpdatedAt: currentUpdatedAt,
+    subtotal: 49000,
+    deliveryFee: 1500,
+  }), 50500);
+  assert.throws(() => calculateOrderTotalWithDeliveryFee({
+    status: "pending_confirmation",
+    currentUpdatedAt,
+    expectedUpdatedAt: "2026-11-12T18:59:00.000Z",
+    subtotal: 49000,
+    deliveryFee: 1500,
+  }), OrderValidationError);
+  assert.throws(() => calculateOrderTotalWithDeliveryFee({
+    status: "confirmed",
+    currentUpdatedAt,
+    expectedUpdatedAt: currentUpdatedAt,
+    subtotal: 49000,
+    deliveryFee: 1500,
+  }), OrderValidationError);
+  assert.throws(() => calculateOrderTotalWithDeliveryFee({
+    status: "pending_confirmation",
+    currentUpdatedAt,
+    expectedUpdatedAt: currentUpdatedAt,
+    subtotal: 49000,
+    deliveryFee: -1,
+  }), OrderValidationError);
 });
