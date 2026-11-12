@@ -80,7 +80,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       setStockCount(String(productToEdit.stockCount ?? 0));
       setLowStockThreshold(String(productToEdit.lowStockThreshold ?? 3));
       setSku(productToEdit.sku || "");
-      setIsAvailable(productToEdit.isAvailable && (productToEdit.stockCount ?? 0) > 0);
+      setIsAvailable(productToEdit.isAvailable);
       setBadge(productToEdit.badge || "");
     } else {
       // Defaults for new product
@@ -176,11 +176,6 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       setError("Le prix d'origine doit être supérieur ou égal au prix de vente.");
       return;
     }
-    if (isAvailable && Number(stockCount) <= 0) {
-      setError("Un produit ne peut être disponible sans stock positif.");
-      return;
-    }
-
     const specifications: Record<string, string> = {};
     specKeys.forEach((key, i) => {
       if (key.trim() && specVals[i]?.trim()) {
@@ -449,14 +444,11 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                   step="1"
                   required
                   value={stockCount}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setStockCount(value);
-                    if (Number(value) <= 0) setIsAvailable(false);
-                  }}
+                  disabled={Boolean(productToEdit)}
+                  onChange={(e) => setStockCount(e.target.value)}
                   className="w-full text-xs px-3.5 py-2.5 rounded-xl bg-[#1c1c1c] text-[#F3F0E9] border border-white/10 focus:outline-none focus:border-[#1769FF] font-mono"
                 />
-                <p className="mt-1 text-[11px] text-[#777777]">Le stock sera décrémenté uniquement à la confirmation d'une commande.</p>
+                <p className="mt-1 text-[11px] text-[#777777]">{productToEdit ? "Pour modifier le stock, utilisez l'onglet Stock afin d'enregistrer un mouvement." : "Le stock initial est saisi à la création; les changements suivants passent par l'onglet Stock."}</p>
               </div>
               <div>
                 <label className="block text-xs font-semibold text-[#cccccc] mb-1">Seuil d'alerte de stock</label>
@@ -476,10 +468,10 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                   />
                   <div>
                     <span className="text-xs font-semibold text-[#F3F0E9] block">
-                      Disponible en Stock
+                      Visible dans la boutique
                     </span>
                     <span className="text-[11px] text-[#777777]">
-                      Les clients peuvent commander immédiatement
+                      Le stock est géré séparément; une quantité nulle bloque la commande.
                     </span>
                   </div>
                 </label>

@@ -62,7 +62,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   // Metrics calculation
   const totalProducts = products.length;
-  const inStockCount = products.filter((p) => p.isAvailable).length;
+  const inStockCount = products.filter((p) => Number.isSafeInteger(p.stockCount) && (p.stockCount ?? 0) > 0).length;
   const featuredCount = products.filter((p) => p.featured).length;
   const avgPrice = totalProducts > 0
     ? Math.round(products.reduce((acc, p) => acc + p.price, 0) / totalProducts)
@@ -82,7 +82,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     e.stopPropagation();
     try {
       const newState = await productService.toggleProductAvailability(id);
-      showNotify(`Disponibilité mise à jour : ${newState ? 'En stock' : 'Rupture'}`);
+      showNotify(`Visibilité mise à jour : ${newState ? 'Visible' : 'Masqué'}`);
       onRefreshData();
     } catch (err: any) {
       alert(err.message);
@@ -115,7 +115,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const handleSaveProduct = async (productData: Partial<Product>) => {
     try {
       if (productToEdit) {
-        await productService.updateProduct(productToEdit.id, productData);
+        const safeUpdates = { ...productData };
+        delete safeUpdates.stockCount;
+        await productService.updateProduct(productToEdit.id, safeUpdates);
         showNotify(`Produit "${productData.name}" mis à jour.`);
       } else {
         await productService.createProduct(productData as any);
@@ -310,7 +312,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <th className="py-3 px-4">Produit</th>
                   <th className="py-3 px-4">Catégorie</th>
                   <th className="py-3 px-4">Prix FCFA</th>
-                  <th className="py-3 px-4 text-center">En Stock</th>
+                  <th className="py-3 px-4 text-center">Stock</th>
+                  <th className="py-3 px-4 text-center">Visibilité</th>
                   <th className="py-3 px-4 text-center">Vedette</th>
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
@@ -358,7 +361,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         {formatFCFA(p.price)}
                       </td>
 
-                      {/* Stock Toggle Switch */}
+                      {/* Quantité physique; les ajustements sont enregistrés dans l'onglet Stock. */}
+                      <td className="py-3 px-4 text-center whitespace-nowrap font-mono text-slate-700">
+                        {Number.isSafeInteger(p.stockCount) ? p.stockCount : "Non suivi"}
+                      </td>
+
+                      {/* Visibilité indépendante du stock physique. */}
                       <td className="py-3 px-4 text-center whitespace-nowrap">
                         <button
                           type="button"
@@ -372,12 +380,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           {p.isAvailable ? (
                             <>
                               <CheckCircle2 className="w-3.5 h-3.5 text-[#1769FF]" />
-                              <span>En Stock</span>
+                              <span>Visible</span>
                             </>
                           ) : (
                             <>
                               <XCircle className="w-3.5 h-3.5 text-slate-500" />
-                              <span>Rupture</span>
+                              <span>Masqué</span>
                             </>
                           )}
                         </button>

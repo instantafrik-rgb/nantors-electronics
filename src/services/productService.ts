@@ -10,7 +10,7 @@ import { CategoryInfo, Product, CatalogFilter } from "../types";
 
 const LOCAL_STORAGE_PRODUCTS_KEY = "nantors_electronics_products_v1";
 const LOCAL_STORAGE_CATEGORIES_KEY = "nantors_electronics_categories_v1";
-const LOCAL_STORAGE_DATA_SOURCE_KEY = "nantors_electronics_datasource";
+const LOCAL_STORAGE_DATA_SOURCE_KEY = "nantors_electronics_datasource_v2";
 
 function sanitizeForFirestore<T extends Record<string, any>>(
   obj: T,
@@ -38,11 +38,9 @@ class ProductService {
   constructor() {
     try {
       const savedSource = localStorage.getItem(LOCAL_STORAGE_DATA_SOURCE_KEY);
-      if (savedSource === "firebase" && isFirebaseConfigured()) {
-        this.dataSource = "firebase";
-      } else {
-        this.dataSource = "local";
-      }
+      if (savedSource === "local") this.dataSource = "local";
+      else if (isFirebaseConfigured()) this.dataSource = "firebase";
+      else this.dataSource = "local";
       this.ensureLocalSeedData();
     } catch {
       this.dataSource = "local";
@@ -81,7 +79,7 @@ class ProductService {
   public setDataSource(source: "local" | "firebase"): void {
     if (source === "firebase" && !isFirebaseConfigured()) {
       throw new Error(
-        "La configuration Firebase n'est pas encore complétée (VITE_FIREBASE_API_KEY manquante).",
+        "La configuration Firebase est incomplète. Vérifiez les six variables VITE_FIREBASE_* dans Vercel.",
       );
     }
     this.dataSource = source;
@@ -278,6 +276,9 @@ class ProductService {
   ): Promise<Product> {
     const now = new Date().toISOString();
     const payloadWithTime = { ...updates, updatedAt: now };
+    if (this.dataSource === "firebase" && updates.stockCount !== undefined) {
+      throw new Error("Le stock doit être modifié depuis l'onglet Stock afin de conserver un historique fiable.");
+    }
 
     if (this.dataSource === "firebase") {
       const db = await getDb();
@@ -312,19 +313,22 @@ class ProductService {
       const db = await getDb();
       if (db) {
         try {
-          const { collection, doc, deleteDoc, getDocs } = await import("firebase/firestore");
-          const ordersSnapshot = await getDocs(collection(db, "orders"));
+          const { collection, doc, deleteDoc, getDocs, query, where, limit } = await import("firebase/firestore");
+          const [ordersSnapshot, movementSnapshot] = await Promise.all([
+            getDocs(collection(db, "orders")),
+            getDocs(query(collection(db, "inventory_movements"), where("productId", "==", id), limit(1))),
+          ]);
           const hasOrderHistory = ordersSnapshot.docs.some((orderDoc) =>
             Array.isArray(orderDoc.data().items) &&
             orderDoc.data().items.some((item: any) => item.productId === id)
           );
-          if (hasOrderHistory) {
-            throw new Error("Ce produit figure dans l'historique des commandes. Désactivez sa disponibilité au lieu de le supprimer afin de préserver les mouvements de stock.");
+          if (hasOrderHistory || !movementSnapshot.empty) {
+            throw new Error("Ce produit possède un historique de commandes ou de stock. Masquez-le au lieu de le supprimer afin de préserver les archives.");
           }
           await deleteDoc(doc(db, "products", id));
           return;
         } catch (err) {
-          if (err instanceof Error && err.message.startsWith("Ce produit figure")) throw err;
+          if (err instanceof Error && err.message.startsWith("Ce produit possède")) throw err;
           console.error("Erreur suppression produit Firestore:", err);
           throw new Error("La suppression n'a pas été effectuée dans Firestore.");
         }
@@ -343,9 +347,6 @@ class ProductService {
     const product = await this.getProductById(id);
     if (!product) throw new Error("Produit non trouvé");
     const newState = !product.isAvailable;
-    if (newState && (!Number.isInteger(product.stockCount) || (product.stockCount ?? 0) <= 0)) {
-      throw new Error("Renseignez un stock positif avant de rendre ce produit disponible.");
-    }
     await this.updateProduct(id, { isAvailable: newState });
     return newState;
   }

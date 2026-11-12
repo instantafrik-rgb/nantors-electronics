@@ -67,11 +67,13 @@ const ProductDetailContent: React.FC<{
 
   // 2. Real price & quantity calculation
   const totalPrice = product.price * quantity;
+  const canOrder = product.isAvailable && Number.isSafeInteger(product.stockCount) && (product.stockCount ?? 0) > 0;
+  const maxOrderQuantity = Math.min(20, product.stockCount ?? 0);
   // 3. Question WhatsApp
   const whatsappQuestionUrl = generateWhatsAppProductQuestionUrl(product);
 
   const handleDecrease = () => setQuantity((prev) => Math.max(1, prev - 1));
-  const handleIncrease = () => setQuantity((prev) => Math.min(20, prev + 1));
+  const handleIncrease = () => setQuantity((prev) => Math.min(maxOrderQuantity, prev + 1));
 
   // 6. Circular image navigation
   const handlePrevImage = (e?: React.MouseEvent) => {
@@ -103,7 +105,7 @@ const ProductDetailContent: React.FC<{
 
   const handleWebsiteOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!product || !product.isAvailable) return;
+    if (!product || !canOrder) return;
     if (!isWhatsAppConfigured()) {
       setOrderError("Le numéro WhatsApp commercial doit être configuré avant l'activation des commandes en ligne.");
       return;
@@ -280,13 +282,13 @@ const ProductDetailContent: React.FC<{
                     {product.categoryLabel || product.category}
                   </span>
                 )}
-                {product.isAvailable ? (
+                {canOrder ? (
                   <span className="inline-flex items-center gap-1.5 text-[#FF6B00] font-semibold">
                     <CheckCircle2 className="w-3.5 h-3.5" />
                     En Stock Immédiat
                   </span>
                 ) : (
-                  <span className="text-amber-400 font-medium">Disponibilité à confirmer</span>
+                  <span className="text-amber-400 font-medium">{product.stockCount === undefined ? "Stock à renseigner" : "Rupture de stock"}</span>
                 )}
               </div>
 
@@ -453,9 +455,9 @@ const ProductDetailContent: React.FC<{
               <button
                 type="button"
                 onClick={() => { setCheckoutOpen(v => !v); setOrderError(''); }}
-                disabled={!product.isAvailable}
+                disabled={!canOrder}
                 className={`w-full py-3.5 px-6 rounded-xl font-bold text-sm flex items-center justify-center gap-2.5 shadow-[0_2px_15px_rgba(23,105,255,0.18)] transition-all duration-200 ${
-                  product.isAvailable
+                  canOrder
                     ? 'bg-[#1769FF] hover:bg-[#0f56d9] text-white active:scale-98 cursor-pointer'
                     : 'bg-slate-100 text-slate-400 cursor-not-allowed'
                 }`}

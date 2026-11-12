@@ -37,9 +37,11 @@ export interface AppConfig {
 const env = import.meta.env;
 
 const firebaseApiKey = env.VITE_FIREBASE_API_KEY || "";
-const firebaseProjectId = env.VITE_FIREBASE_PROJECT_ID || "nantors-electronics";
-const firebaseAuthDomain =
-  env.VITE_FIREBASE_AUTH_DOMAIN || "nantors-electronics.firebaseapp.com";
+const firebaseProjectId = env.VITE_FIREBASE_PROJECT_ID || "";
+const firebaseAuthDomain = env.VITE_FIREBASE_AUTH_DOMAIN || "";
+const firebaseStorageBucket = env.VITE_FIREBASE_STORAGE_BUCKET || "";
+const firebaseMessagingSenderId = env.VITE_FIREBASE_MESSAGING_SENDER_ID || "";
+const firebaseAppId = env.VITE_FIREBASE_APP_ID || "";
 
 // Détection stricte des numéros factices ou placeholders pour éviter de générer des liens WhatsApp erronés
 const rawWhatsApp = env.VITE_WHATSAPP_NUMBER || "";
@@ -59,12 +61,11 @@ export const config: AppConfig = {
     apiKey: firebaseApiKey,
     authDomain: firebaseAuthDomain,
     projectId: firebaseProjectId,
-    storageBucket:
-      env.VITE_FIREBASE_STORAGE_BUCKET || "nantors-electronics.appspot.com",
-    messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID || "",
-    appId: env.VITE_FIREBASE_APP_ID || "",
-    // Real Firebase connection requires apiKey and valid projectId
-    isConfigured: Boolean(firebaseApiKey && firebaseApiKey.length > 5),
+    storageBucket: firebaseStorageBucket,
+    messagingSenderId: firebaseMessagingSenderId,
+    appId: firebaseAppId,
+    // Les six valeurs Web doivent être présentes avant d'activer Firestore/Auth.
+    isConfigured: Boolean(firebaseApiKey && firebaseAuthDomain && firebaseProjectId && firebaseStorageBucket && firebaseMessagingSenderId && firebaseAppId),
   },
   cloudinary: {
     cloudName: env.VITE_CLOUDINARY_CLOUD_NAME || "pgjikefb",
@@ -86,6 +87,6 @@ export const config: AppConfig = {
     showroomAddress: "Avedji Léo 2000 Lomé",
     workingHours: "Lun - Sam : 08h30 - 19h00",
     guaranteeMonths: 12,
-    adminAuthorizedEmail: env.VITE_ADMIN_EMAIL || "instantafrik@gmail.com",
+    adminAuthorizedEmail: "instantafrik@gmail.com",
   },
 };
