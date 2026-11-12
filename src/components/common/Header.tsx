@@ -64,7 +64,7 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* 2. Navigation Principale: Sticky on all devices */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 sm:h-20 flex items-center justify-between gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 sm:h-20 flex items-center justify-between gap-3 sm:gap-8">
           {/* Zone 1: Brand Wordmark (Editorial luxury tech) */}
           <button
             type="button"
@@ -79,7 +79,7 @@ export const Header: React.FC<HeaderProps> = ({
               {config.shop.logoUrl ? <img src={config.shop.logoUrl} alt={config.shop.name} className="h-full w-full object-contain p-1" /> : <span className="font-display font-extrabold text-xl tracking-tighter text-slate-900">N<span className="text-[#1769FF]">.</span></span>}
             </div>
             <div>
-              <span className="font-display font-bold text-xl tracking-tight text-slate-900 whitespace-nowrap block leading-tight">
+              <span className="font-display font-bold text-lg sm:text-xl tracking-tight text-slate-900 whitespace-nowrap block leading-tight">
                 {config.shop.name}
               </span>
               <span className="text-[10px] tracking-widest uppercase text-slate-500 font-medium hidden sm:block">
@@ -140,10 +140,11 @@ export const Header: React.FC<HeaderProps> = ({
               href={waDirectUrl}
               target={waDirectUrl.startsWith('#') ? undefined : '_blank'}
               rel={waDirectUrl.startsWith('#') ? undefined : 'noopener noreferrer'}
-              className="inline-flex items-center gap-2 px-4 py-2.5 text-xs md:text-sm font-bold text-white bg-[#1769FF] hover:bg-[#0f56d9] active:scale-98 rounded-xl shadow-[0_2px_15px_rgba(23,105,255,0.3)] hover:shadow-[0_4px_20px_rgba(23,105,255,0.45)] transition-all duration-200 whitespace-nowrap shrink-0"
+              aria-label="Contacter Nantor's Electronics sur WhatsApp"
+              className="inline-flex items-center gap-2 px-3 sm:px-4 py-2.5 text-xs md:text-sm font-bold text-white bg-[#1769FF] hover:bg-[#0f56d9] active:scale-98 rounded-xl shadow-[0_2px_15px_rgba(23,105,255,0.3)] hover:shadow-[0_4px_20px_rgba(23,105,255,0.45)] transition-all duration-200 whitespace-nowrap shrink-0"
             >
               <MessageSquare className="w-4 h-4 fill-white stroke-none" />
-              <span>WhatsApp Direct</span>
+              <span className="hidden sm:inline">WhatsApp Direct</span>
             </a>
 
             {/* Mobile hamburger toggle */}
