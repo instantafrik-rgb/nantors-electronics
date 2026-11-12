@@ -46,9 +46,10 @@ export const orderService = {
       items: input.items.map(({ productId, quantity }) => ({ productId, quantity })),
     });
   },
-  async setDeliveryFee(orderId: string, fee: number): Promise<void> {
+  async setDeliveryFee(orderId: string, fee: number, expectedUpdatedAt: string): Promise<void> {
     if (!Number.isSafeInteger(fee) || fee < 0) throw new Error("Les frais de livraison doivent être un montant entier positif ou nul.");
-    await callCloudFunction("setOrderDeliveryFee", { orderId, fee });
+    if (!expectedUpdatedAt || expectedUpdatedAt.length > 50) throw new Error("Actualisez la commande avant de modifier ses frais de livraison.");
+    await callCloudFunction("setOrderDeliveryFee", { orderId, fee, expectedUpdatedAt });
   },
   async updateStatus(orderId: string, status: OrderStatus): Promise<void> {
     await callCloudFunction("updateOrderStatus", { orderId, status });
