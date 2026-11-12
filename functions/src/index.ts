@@ -4,7 +4,7 @@ import { getFirestore } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import {
   OrderValidationError, assertPaymentAllowed, assertStatusTransition, buildOrderItems,
-  calculateSubtotal, computeStockAdjustments, isSameIdempotentOrder, normalizeRequestedItems,
+  calculateSubtotal, calculateOrderTotalWithDeliveryFee, computeStockAdjustments, isSameIdempotentOrder, normalizeRequestedItems,
   normalizeStoredOrderItems, validateCustomerFields, validateRequestId, type OrderStatus,
 } from "./orderLogic.js";
 
@@ -114,8 +114,11 @@ export const setOrderDeliveryFee = onCall({ region: "europe-west1", maxInstances
     requireOwner(request.auth);
     const orderId = typeof request.data?.orderId === "string" ? request.data.orderId.trim() : "";
     const fee = request.data?.fee;
-    if (!orderId || orderId.length > 150 || typeof fee !== "number" || !Number.isSafeInteger(fee) || fee < 0 || fee > 10000000) {
-      throw new HttpsError("invalid-argument", "La référence ou les frais de livraison sont invalides.");
+    const expectedUpdatedAt = request.data?.expectedUpdatedAt;
+    if (!orderId || orderId.length > 150 || typeof fee !== "number" ||
+        !Number.isSafeInteger(fee) || fee < 0 || fee > 10000000 ||
+        typeof expectedUpdatedAt !== "string" || expectedUpdatedAt.length < 1 || expectedUpdatedAt.length > 50) {
+      throw new HttpsError("invalid-argument", "La référence, la version de commande ou les frais de livraison sont invalides.");
     }
     const orderRef = db.collection("orders").doc(orderId);
     const now = new Date().toISOString();
@@ -123,10 +126,13 @@ export const setOrderDeliveryFee = onCall({ region: "europe-west1", maxInstances
       const snapshot = await transaction.get(orderRef);
       if (!snapshot.exists) throw new HttpsError("not-found", "Commande introuvable.");
       const order = snapshot.data()!;
-      if (order.status !== "pending_confirmation") throw new HttpsError("failed-precondition", "Les frais ne peuvent être modifiés qu'avant confirmation.");
-      if (typeof order.subtotal !== "number" || !Number.isSafeInteger(order.subtotal) || order.subtotal <= 0) throw new HttpsError("failed-precondition", "Le sous-total de la commande est invalide.");
-      const total = order.subtotal + fee;
-      if (!Number.isSafeInteger(total)) throw new HttpsError("failed-precondition", "Le total de la commande dépasse la limite autorisée.");
+      const total = calculateOrderTotalWithDeliveryFee({
+        status: order.status,
+        currentUpdatedAt: order.updatedAt,
+        expectedUpdatedAt,
+        subtotal: order.subtotal,
+        deliveryFee: fee,
+      });
       transaction.update(orderRef, { deliveryFee: fee, total, updatedAt: now });
       return { orderId, deliveryFee: fee, total };
     });
