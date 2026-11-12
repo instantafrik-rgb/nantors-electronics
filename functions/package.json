@@ -5,7 +5,7 @@
   "engines": { "node": "22" },
   "scripts": {
     "build": "tsc",
-    "test": "node --test lib/orderLogic.test.js",
+    "test": "node --test lib/orderLogic.test.js lib/productLogic.test.js",
     "serve": "npm run build && firebase emulators:start --only functions",
     "deploy": "firebase deploy --only functions"
   },
