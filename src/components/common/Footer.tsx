@@ -178,10 +178,10 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectCategory, ca
 
       {/* Bottom Bar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-        <p>© {new Date().getFullYear()} Nantor's Electronics. Tous droits réservés. Vente d'accessoires certifiés au Togo.</p>
+        <p>© {new Date().getFullYear()} Nantor's Electronics. Tous droits réservés. Accessoires tech et connectique au Togo.</p>
         
         <div className="flex items-center gap-6">
-          <span className="text-slate-500">Paiement 100% sécurisé à la livraison</span>
+          <span className="text-slate-500">Paiement à la livraison</span>
           <button
             onClick={() => onNavigate('admin')}
             className="text-slate-500 hover:text-[#1769FF] flex items-center gap-1 transition-colors cursor-pointer"
