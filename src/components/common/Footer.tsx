@@ -4,6 +4,7 @@
  */
 
 import React from 'react';
+import type { CategoryInfo } from '../../types';
 import { MessageSquare, Phone, Mail, MapPin, Clock, ShieldCheck, Truck, RefreshCw, Lock } from 'lucide-react';
 import { config } from '../../config/environment';
 import { generateWhatsAppInquiryUrl } from '../../utils/formatters';
@@ -11,10 +12,19 @@ import { generateWhatsAppInquiryUrl } from '../../utils/formatters';
 interface FooterProps {
   onNavigate: (page: 'home' | 'catalog' | 'about' | 'contact' | 'admin') => void;
   onSelectCategory?: (categorySlug: string) => void;
+  categories?: CategoryInfo[];
 }
 
-export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectCategory }) => {
+export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectCategory, categories = [] }) => {
   const waInquiryUrl = generateWhatsAppInquiryUrl();
+  const fallbackCategories = [
+    { slug: 'chargeurs', name: 'Chargeurs' },
+    { slug: 'cables', name: 'Câbles & connectique' },
+    { slug: 'accessoires-telephonie', name: 'Accessoires Téléphonie' },
+    { slug: 'accessoires-informatique', name: 'Hubs & Accessoires PC' },
+    { slug: 'audio-ecouteurs', name: 'Audio & écouteurs' },
+  ];
+  const footerCategories = categories.length ? categories.slice(0, 5) : fallbackCategories;
 
   return (
     <footer className="bg-white text-slate-500 border-t border-slate-200 pt-16 pb-12">
@@ -129,61 +139,16 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectCategory }) 
         <div>
           <h4 className="text-slate-900 text-xs font-bold uppercase tracking-wider mb-4">Catégories</h4>
           <ul className="space-y-2.5 text-sm">
-            <li>
-              <button 
-                onClick={() => {
-                  onNavigate('catalog');
-                  if (onSelectCategory) onSelectCategory('chargeurs');
-                }} 
-                className="hover:text-[#1769FF] transition-colors cursor-pointer"
-              >
-                Chargeurs
-              </button>
-            </li>
-            <li>
-              <button 
-                onClick={() => {
-                  onNavigate('catalog');
-                  if (onSelectCategory) onSelectCategory('cables');
-                }} 
-                className="hover:text-[#1769FF] transition-colors cursor-pointer"
-              >
-                Câbles & connectique
-              </button>
-            </li>
-            <li>
-              <button 
-                onClick={() => {
-                  onNavigate('catalog');
-                  if (onSelectCategory) onSelectCategory('accessoires-telephonie');
-                }} 
-                className="hover:text-[#1769FF] transition-colors cursor-pointer"
-              >
-                Accessoires Téléphonie
-              </button>
-            </li>
-            <li>
-              <button 
-                onClick={() => {
-                  onNavigate('catalog');
-                  if (onSelectCategory) onSelectCategory('accessoires-informatique');
-                }} 
-                className="hover:text-[#1769FF] transition-colors cursor-pointer"
-              >
-                Hubs & Accessoires PC
-              </button>
-            </li>
-            <li>
-              <button 
-                onClick={() => {
-                  onNavigate('catalog');
-                  if (onSelectCategory) onSelectCategory('audio-ecouteurs');
-                }} 
-                className="hover:text-[#1769FF] transition-colors cursor-pointer"
-              >
-                Audio & écouteurs
-              </button>
-            </li>
+            {footerCategories.map((category) => (
+              <li key={category.slug}>
+                <button
+                  onClick={() => onSelectCategory ? onSelectCategory(category.slug) : onNavigate('catalog')}
+                  className="hover:text-[#1769FF] transition-colors cursor-pointer"
+                >
+                  {category.name}
+                </button>
+              </li>
+            ))}
           </ul>
         </div>
 

@@ -104,3 +104,17 @@ Les modifications de travail sont développées sur la branche `redesign/admin-p
 - Clients (synthèse de l'historique des commandes)
 - Statistiques et export CSV
 - Configuration et état des connexions
+
+
+## Contrôles à terminer avant toute mise en production
+
+La prévisualisation Vercel et la compilation ne prouvent pas que les services Firebase ont été déployés ou testés avec les données réelles. Avant d'ouvrir la nouvelle version aux clients :
+
+1. Vérifier dans Vercel que les six variables `VITE_FIREBASE_*` sont renseignées pour Preview et Production. Elles sont présentes dans la configuration consultée pour ce projet.
+2. Renseigner le numéro commercial dans **Espace propriétaire → Paramètres → Coordonnées** (indicatif pays inclus, chiffres uniquement), ou ajouter `VITE_WHATSAPP_NUMBER` aux variables Vercel puis redéployer. Le numéro n'était pas présent dans la liste des variables Vercel consultée; tant qu'il manque, le formulaire de commande en ligne reste bloqué volontairement.
+3. Vérifier que Firebase Authentication avec Google et Firestore sont activés, que le compte propriétaire autorisé est bien `instantafrik@gmail.com`, et que les vraies fiches produits/catégories sont présentes dans Firestore. Les données `INITIAL_PRODUCTS` sont uniquement des données locales de démonstration et ne sont pas importées automatiquement.
+4. Depuis un environnement connecté au bon projet Firebase, vérifier le plan de facturation compatible avec Cloud Functions, puis déployer les règles et fonctions avec `firebase deploy --only firestore:rules,functions`. Ce déploiement Firebase n'est pas effectué par Vercel.
+5. Configurer Firebase App Check pour l'application Web avec un fournisseur reCAPTCHA (v3 ou Enterprise) et les domaines de prévisualisation autorisés. **La fonction publique `createWebsiteOrder` utilise encore `enforceAppCheck: false`** : l'application ne doit pas être déclarée prête pour la production avant d'avoir ajouté la clé publique App Check côté client, vérifié le jeton sur la prévisualisation, puis activé l'application stricte de l'App Check côté fonction.
+6. Tester avec le compte propriétaire une commande réelle de bout en bout sur la prévisualisation : création Firestore, ouverture WhatsApp, saisie des frais, confirmation avec déduction de stock, livraison, paiement, puis annulation d'une autre commande confirmée pour vérifier la restitution.
+
+Ne pas fusionner `redesign/admin-premium`, promouvoir la prévisualisation ni modifier le domaine public sans validation explicite du propriétaire.

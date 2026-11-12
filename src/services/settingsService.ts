@@ -54,7 +54,7 @@ export async function getShopSettings(): Promise<ShopSettings> {
   return {
     name: safeText(data.name, defaults.name, 100),
     tagline: safeText(data.tagline, defaults.tagline, 200),
-    logoUrl: safeText(data.logoUrl, defaults.logoUrl, 1500),
+    logoUrl: safeText(data.logoUrl, defaults.logoUrl, 1500) || defaults.logoUrl,
     whatsappNumber,
     phoneFormatted: safeText(data.phoneFormatted, whatsappNumber ? `+${whatsappNumber}` : defaults.phoneFormatted, 40),
     email: safeText(data.email, defaults.email, 150),

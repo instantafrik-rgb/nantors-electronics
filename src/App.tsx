@@ -569,6 +569,7 @@ export default function App() {
       {/* Global Footer (shown on public pages) */}
       {activePage !== "admin" && (
         <Footer
+          categories={categories}
           onNavigate={handleNavigate}
           onSelectCategory={(slug) => {
             setSelectedCategory(slug);

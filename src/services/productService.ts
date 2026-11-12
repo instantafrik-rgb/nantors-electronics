@@ -357,6 +357,17 @@ class ProductService {
   }
 
   public async updateCategory(id: string, updates: Partial<CategoryInfo>): Promise<void> {
+    const categories = await this.getCategories();
+    const existing = categories.find((category) => category.id === id);
+    if (!existing) throw new Error("Catégorie introuvable.");
+
+    if (updates.slug && updates.slug !== existing.slug) {
+      const products = await this.getProducts({}, true);
+      if (products.some((product) => product.category === existing.slug)) {
+        throw new Error("Cette catégorie contient encore des produits. Réaffectez-les avant de modifier son identifiant.");
+      }
+    }
+
     if (this.dataSource === "firebase") {
       const db = await getDb();
       if (!db) throw new Error("Firestore n'est pas disponible.");
@@ -364,9 +375,8 @@ class ProductService {
       await updateDoc(doc(db, "categories", id), updates);
       return;
     }
-    const categories = await this.getCategories();
+
     const index = categories.findIndex((category) => category.id === id);
-    if (index < 0) throw new Error("Catégorie introuvable.");
     categories[index] = { ...categories[index], ...updates };
     localStorage.setItem(LOCAL_STORAGE_CATEGORIES_KEY, JSON.stringify(categories));
   }

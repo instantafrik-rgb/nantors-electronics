@@ -49,7 +49,7 @@ export const config: AppConfig = {
   shop: {
     name: "Nantor's Electronics",
     tagline: "L'Excellence Technologique au Quotidien",
-    logoUrl: "",
+    logoUrl: "/favicon.svg",
     currency: "FCFA",
     paymentMethod: "cash_on_delivery",
     whatsappNumber: validatedWhatsApp,
