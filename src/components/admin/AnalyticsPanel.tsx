@@ -27,7 +27,7 @@ export const AnalyticsPanel: React.FC<{products: Product[]}> = ({products}) => {
     return [...map.values()].sort((a,b)=>b.quantity-a.quantity).slice(0,5);
   },[paid]);
   const sourceCounts=["website","whatsapp","admin"].map(source=>({source,count:scoped.filter(o=>o.source===source).length}));
-  const lowStock=products.filter(p=>(p.stockCount??0)<=(p.lowStockThreshold??3));
+  const lowStock=products.filter(p=>(p.stockCount??0)<=(p.lowStockThreshold??0));
   const exportCsv=()=>{
     const rows=[["Commande","Date","Client","Téléphone","Source","Statut","Paiement","Sous-total","Livraison","Total"],...scoped.map(o=>[o.orderNumber,o.createdAt,o.customerName,o.customerPhone,o.source,o.status,o.paymentStatus,String(o.subtotal),o.deliveryFee===null?"":String(o.deliveryFee),o.total===null?"":String(o.total)])];
     const csv=rows.map(row=>row.map(value=>`"${String(value).replace(/"/g,'""')}"`).join(";")).join("\n");

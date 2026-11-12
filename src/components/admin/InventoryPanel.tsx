@@ -31,7 +31,7 @@ export const InventoryPanel: React.FC<{ products: Product[]; onRefresh: () => vo
     } catch (e) { setError(e instanceof Error ? e.message : "Mouvement impossible."); }
     finally { setBusy(false); }
   };
-  const lowStock = products.filter(p => (p.stockCount ?? 0) <= (p.lowStockThreshold ?? 3));
+  const lowStock = products.filter(p => (p.stockCount ?? 0) <= (p.lowStockThreshold ?? 0));
 
   return <section className="space-y-5">
     <header className="flex items-center justify-between gap-3"><div><p className="text-xs uppercase tracking-widest text-[#1769FF] font-bold">Suivi des quantités</p><h2 className="text-2xl font-bold text-slate-900">Stock & inventaire</h2><p className="text-sm text-slate-500">Les commandes confirmées déduisent automatiquement le stock.</p></div><button onClick={() => void load()} disabled={busy} className="rounded-xl border border-slate-200 bg-white p-3 text-slate-600"><RefreshCw className="h-4 w-4"/></button></header>
