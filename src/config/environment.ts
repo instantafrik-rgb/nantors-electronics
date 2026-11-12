@@ -6,7 +6,7 @@
 export interface AppConfig {
   firebase: {
     apiKey: string; authDomain: string; projectId: string; storageBucket: string;
-    messagingSenderId: string; appId: string; isConfigured: boolean;
+    messagingSenderId: string; appId: string; appCheckSiteKey: string; isConfigured: boolean;
   };
   cloudinary: { cloudName: string; uploadPreset: string; assetFolder: string; uploadUrl: string; };
   shop: {
@@ -24,6 +24,7 @@ const firebaseAuthDomain = env.VITE_FIREBASE_AUTH_DOMAIN || "";
 const firebaseStorageBucket = env.VITE_FIREBASE_STORAGE_BUCKET || "";
 const firebaseMessagingSenderId = env.VITE_FIREBASE_MESSAGING_SENDER_ID || "";
 const firebaseAppId = env.VITE_FIREBASE_APP_ID || "";
+const firebaseAppCheckSiteKey = env.VITE_FIREBASE_APPCHECK_SITE_KEY || "";
 
 const rawWhatsApp = env.VITE_WHATSAPP_NUMBER || "";
 const isPlaceholderNumber = (num: string): boolean => {
@@ -38,6 +39,7 @@ export const config: AppConfig = {
   firebase: {
     apiKey: firebaseApiKey, authDomain: firebaseAuthDomain, projectId: firebaseProjectId,
     storageBucket: firebaseStorageBucket, messagingSenderId: firebaseMessagingSenderId, appId: firebaseAppId,
+    appCheckSiteKey: firebaseAppCheckSiteKey,
     isConfigured: Boolean(firebaseApiKey && firebaseAuthDomain && firebaseProjectId && firebaseStorageBucket && firebaseMessagingSenderId && firebaseAppId),
   },
   cloudinary: {

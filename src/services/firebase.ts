@@ -9,11 +9,13 @@ import { config } from "../config/environment";
 import type { FirebaseApp } from "firebase/app";
 import type { Firestore } from "firebase/firestore";
 import type { Auth, GoogleAuthProvider } from "firebase/auth";
+import type { AppCheck } from "firebase/app-check";
 
 let firebaseApp: FirebaseApp | null = null;
 let firestoreDb: Firestore | null = null;
 let firebaseAuth: Auth | null = null;
 let googleProviderInstance: GoogleAuthProvider | null = null;
+let firebaseAppCheck: AppCheck | null = null;
 
 export function isFirebaseConfigured(): boolean {
   return config.firebase.isConfigured;
@@ -46,6 +48,30 @@ export async function getFirebaseApp(): Promise<FirebaseApp | null> {
   } catch (err) {
     console.warn("Firebase initialization skipped or failed:", err);
     return null;
+  }
+}
+
+/**
+ * Initialise Firebase App Check when a web site key is supplied.
+ * The key is public by design; enforcement is enabled separately on the callable function.
+ */
+export async function getFirebaseAppCheck(): Promise<AppCheck | null> {
+  if (!config.firebase.appCheckSiteKey || typeof window === "undefined") return null;
+  if (firebaseAppCheck) return firebaseAppCheck;
+
+  const app = await getFirebaseApp();
+  if (!app) return null;
+
+  try {
+    const { initializeAppCheck, ReCaptchaV3Provider } = await import("firebase/app-check");
+    firebaseAppCheck = initializeAppCheck(app, {
+      provider: new ReCaptchaV3Provider(config.firebase.appCheckSiteKey),
+      isTokenAutoRefreshEnabled: true,
+    });
+    return firebaseAppCheck;
+  } catch (err) {
+    console.error("Firebase App Check initialization failed:", err);
+    throw new Error("Firebase App Check n'a pas pu être initialisé. Vérifiez la clé du site et le domaine autorisé dans Firebase Console.");
   }
 }
 

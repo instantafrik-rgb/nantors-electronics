@@ -135,6 +135,7 @@ export const SystemConfigModal: React.FC<SystemConfigModalProps> = ({
             <div className="text-xs space-y-1 font-mono text-[#888888] pt-1">
               <div>projectId : <span className="text-[#F3F0E9] font-bold">{config.firebase.projectId}</span></div>
               <div>authDomain : <span className="text-[#F3F0E9] font-bold">{config.firebase.authDomain}</span></div>
+              <div>App Check Web : <span className="text-[#F3F0E9] font-bold">{config.firebase.appCheckSiteKey ? "Clé présente · test requis" : "Clé à configurer"}</span></div>
               <div>Règles de sécurité : <span className="text-emerald-400 font-sans font-medium">fichier présent · déploiement et tests requis</span></div>
             </div>
           </div>
