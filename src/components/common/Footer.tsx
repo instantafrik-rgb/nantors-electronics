@@ -17,9 +17,9 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectCategory }) 
   const waInquiryUrl = generateWhatsAppInquiryUrl();
 
   return (
-    <footer className="bg-[#0b0b0b] text-slate-500 border-t border-[#222222] pt-16 pb-12">
+    <footer className="bg-white text-slate-500 border-t border-slate-200 pt-16 pb-12">
       {/* 4 Trust Highlights Strip */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 mb-12 border-b border-[#222222]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 mb-12 border-b border-slate-200">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="flex items-start gap-4">
             <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-[#1769FF] shrink-0">
@@ -53,7 +53,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectCategory }) 
 
           <div className="flex items-start gap-4">
             <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-[#1769FF] shrink-0">
-              <MessageSquare className="w-5 h-5 fill-[#FF6B00] stroke-none" />
+              <MessageSquare className="w-5 h-5 fill-[#1769FF] stroke-none" />
             </div>
             <div>
               <h4 className="text-slate-900 font-semibold text-sm">Contact WhatsApp</h4>
@@ -74,7 +74,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectCategory }) 
               </span>
             </div>
             <span className="font-display font-bold text-xl text-slate-900">
-              Nantor's <span className="text-[#1769FF]">Electronics</span>
+              {config.shop.name}
             </span>
           </div>
 
@@ -90,7 +90,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectCategory }) 
               rel={waInquiryUrl.startsWith('#') ? undefined : 'noopener noreferrer'}
               className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#1769FF] hover:bg-[#0f56d9] text-white text-xs font-bold rounded-xl transition-colors shadow-sm"
             >
-              <MessageSquare className="w-4 h-4 fill-[#111111] stroke-none" />
+              <MessageSquare className="w-4 h-4 fill-white stroke-none" />
               <span>Discuter avec un conseiller</span>
             </a>
           </div>
@@ -210,7 +210,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectCategory }) 
       </div>
 
       {/* Bottom Bar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pt-6 border-t border-[#222222] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
         <p>© {new Date().getFullYear()} Nantor's Electronics. Tous droits réservés. Vente d'accessoires certifiés au Togo.</p>
         
         <div className="flex items-center gap-6">

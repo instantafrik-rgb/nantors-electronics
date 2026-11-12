@@ -7,6 +7,7 @@ import React, { useState } from 'react';
 import { Menu, X, ArrowRight, MessageSquare, Shield } from 'lucide-react';
 import { generateWhatsAppInquiryUrl } from '../../utils/formatters';
 import { AdminUser } from '../../types';
+import { config } from '../../config/environment';
 
 interface HeaderProps {
   activePage: 'home' | 'catalog' | 'about' | 'contact' | 'admin';
@@ -42,7 +43,7 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-2 overflow-hidden text-ellipsis whitespace-nowrap">
             <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#1769FF] animate-pulse"></span>
-            <span className="font-medium text-slate-900">Accessoires tech à Lomé · Livraison au Togo</span>
+            <span className="font-medium text-slate-900">Accessoires tech à {config.shop.location} · Livraison au Togo</span>
             <span className="hidden sm:inline text-slate-300">/</span>
             <span className="hidden sm:inline text-slate-600">Paiement à la livraison</span>
             <span className="hidden md:inline text-slate-300">/</span>
@@ -74,17 +75,15 @@ export const Header: React.FC<HeaderProps> = ({
             className="flex items-center gap-3 text-left group focus-visible:outline-none cursor-pointer select-none"
             title="Retour à l'accueil"
           >
-            <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-900 group-hover:border-[#1769FF]/60 group-hover:shadow-[0_0_15px_rgba(23,105,255,0.25)] transition-all">
-              <span className="font-display font-extrabold text-xl tracking-tighter text-slate-900">
-                N<span className="text-[#1769FF]">.</span>
-              </span>
+            <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-900 group-hover:border-[#1769FF]/60 group-hover:shadow-[0_0_15px_rgba(23,105,255,0.25)] transition-all overflow-hidden">
+              {config.shop.logoUrl ? <img src={config.shop.logoUrl} alt={config.shop.name} className="h-full w-full object-contain p-1" /> : <span className="font-display font-extrabold text-xl tracking-tighter text-slate-900">N<span className="text-[#1769FF]">.</span></span>}
             </div>
             <div>
               <span className="font-display font-bold text-xl tracking-tight text-slate-900 whitespace-nowrap block leading-tight">
-                Nantor's <span className="text-[#1769FF]">Electronics</span>
+                {config.shop.name}
               </span>
               <span className="text-[10px] tracking-widest uppercase text-slate-500 font-medium hidden sm:block">
-                Lomé · High-Tech & Connectique
+                {config.shop.location} · High-Tech & Connectique
               </span>
             </div>
           </button>
