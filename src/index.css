@@ -321,3 +321,72 @@ html[data-theme="dark"] footer { background: #0b1220 !important; border-color: #
  .nantor-catalog-products .group h3 { font-size:11px; }
  .nantor-catalog-products .group button { font-size:9px; padding:7px 8px; }
 }
+
+
+/* About, contact and footer pages */
+.nantor-info-page { background:#afbdc5; padding:30px clamp(14px,3.2vw,54px) 60px; }
+.nantor-info-shell { width:min(1420px,100%); margin:auto; display:flex; flex-direction:column; gap:22px; }
+.nantor-info-hero { min-height:350px; position:relative; isolation:isolate; overflow:hidden; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; padding:clamp(30px,5vw,68px); border-radius:30px; background:#fff; box-shadow:0 18px 50px rgba(48,64,73,.06); }
+.nantor-info-hero h1 { position:relative; z-index:2; margin-top:17px; color:#171b1e; font-size:clamp(38px,5vw,64px); font-weight:650; line-height:.98; letter-spacing:-.065em; }
+.nantor-info-hero h1 span,.nantor-info-story h2 span { color:#1769ff; }
+.nantor-info-hero p { position:relative; z-index:2; max-width:530px; margin-top:18px; color:#7a868d; font-size:13px; line-height:1.75; }
+.nantor-info-hero button,.nantor-info-bottom button { position:relative; z-index:2; display:inline-flex; align-items:center; gap:10px; margin-top:23px; padding:13px 18px; border-radius:14px; background:#1769ff; color:white; font-size:11px; font-weight:750; transition:all .2s; }
+.nantor-info-hero button:hover,.nantor-info-bottom button:hover { background:#0e56dd; transform:translateY(-2px); }
+.nantor-info-hero-orb { position:absolute; z-index:1; width:390px; height:390px; right:7%; top:50%; transform:translateY(-50%); border-radius:50%; background:linear-gradient(145deg,#e7edf1,#cbd7df); display:grid; place-items:center; box-shadow:0 0 0 35px rgba(241,245,247,.7),0 0 0 75px rgba(241,245,247,.45); }
+.nantor-info-hero-orb div { width:210px; height:210px; border-radius:50%; background:linear-gradient(145deg,#1769ff,#0e1e3d); box-shadow:inset -18px -20px 32px rgba(0,0,0,.25),0 25px 50px rgba(20,44,70,.2); }
+.nantor-info-hero-orb span { position:absolute; color:rgba(255,255,255,.9); font-family:'Outfit',sans-serif; font-size:76px; font-weight:800; letter-spacing:-.1em; }
+.nantor-info-story { display:grid; grid-template-columns:1.1fr .9fr; gap:24px; align-items:stretch; }
+.nantor-info-story-copy,.nantor-info-values { padding:clamp(25px,3vw,42px); border-radius:27px; background:#fff; box-shadow:0 14px 38px rgba(48,64,73,.05); }
+.nantor-info-story h2 { margin-top:12px; color:#171b1e; font-family:'Outfit',sans-serif; font-size:clamp(25px,3vw,37px); font-weight:650; line-height:1.07; letter-spacing:-.05em; }
+.nantor-info-story-copy > p { margin-top:15px; color:#7b878e; font-size:12px; line-height:1.8; }
+.nantor-info-values { display:flex; flex-direction:column; justify-content:center; gap:20px; background:#f5f7f7; }
+.nantor-info-values > div { display:grid; grid-template-columns:42px 1fr; column-gap:13px; align-items:center; }
+.nantor-info-value-icon { grid-row:span 2; width:42px; height:42px; display:grid; place-items:center; border-radius:14px; background:#fff; color:#1769ff; }
+.nantor-info-values strong { color:#273036; font-size:12px; }
+.nantor-info-values p { margin-top:4px; color:#879198; font-size:10px; line-height:1.55; }
+.nantor-info-pillars { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+.nantor-info-pillars article { min-height:215px; padding:25px; border-radius:24px; background:#fff; box-shadow:0 12px 32px rgba(48,64,73,.045); }
+.nantor-info-pillars article > div { width:45px; height:45px; display:grid; place-items:center; border-radius:15px; background:#eef4ff; color:#1769ff; }
+.nantor-info-pillars article > span { display:block; margin-top:20px; color:#9aa4a9; font-size:8px; font-weight:800; letter-spacing:.15em; }
+.nantor-info-pillars h3 { margin-top:6px; color:#20272b; font-family:'Outfit',sans-serif; font-size:19px; font-weight:650; }
+.nantor-info-pillars p { margin-top:7px; color:#849097; font-size:11px; line-height:1.7; }
+.nantor-info-bottom { padding:36px; border-radius:27px; background:#101113; color:#fff; text-align:center; }
+.nantor-info-bottom > span { color:#9ebeff; font-size:9px; font-weight:800; letter-spacing:.2em; }
+.nantor-info-bottom h2 { margin-top:12px; color:#fff; font-family:'Outfit',sans-serif; font-size:clamp(25px,3vw,38px); line-height:1.08; font-weight:550; letter-spacing:-.04em; }
+.nantor-info-bottom button { background:white; color:#171b1e; }
+.nantor-contact-page { padding:30px clamp(14px,3.2vw,54px) 60px !important; }
+.nantor-contact-page > div { max-width:1420px !important; gap:24px !important; }
+.nantor-contact-page > div > div:first-child { max-width:none; padding:35px; border-radius:28px; background:#fff; box-shadow:0 14px 38px rgba(48,64,73,.05); text-align:left; }
+.nantor-contact-page > div > div:first-child h1 { margin-top:9px; font-size:clamp(30px,4vw,46px); letter-spacing:-.05em; }
+.nantor-contact-page > div > div:first-child p { max-width:630px; margin-top:10px; }
+.nantor-contact-page .shadow-2xl { box-shadow:0 14px 38px rgba(48,64,73,.055); }
+.nantor-contact-page .rounded-3xl { border-radius:24px; }
+.nantor-contact-page .bg-\\[\\#1769FF\\] { background:#1769ff; }
+.nantor-footer { padding-top:48px; background:#fff; }
+.nantor-footer > div:first-child { padding-bottom:35px; margin-bottom:35px; }
+.nantor-footer > div:last-child { padding-top:20px; }
+.nantor-product-modal { border-radius:28px; }
+.nantor-product-modal > div > div:first-child { background:#f4f6f6; }
+.nantor-product-modal .bg-slate-50 { background:#f3f5f5; }
+.nantor-product-modal .text-white { color:#fff; }
+.nantor-catalog-controls .pointer-events-none { background:linear-gradient(to left,#fff,transparent); }
+@media(max-width:800px) {
+ .nantor-info-hero { min-height:340px; }
+ .nantor-info-hero-orb { right:-22%; width:290px; height:290px; opacity:.45; }
+ .nantor-info-hero-orb div { width:160px; height:160px; }
+ .nantor-info-story { grid-template-columns:1fr; }
+ .nantor-info-pillars { grid-template-columns:1fr; }
+ .nantor-info-pillars article { min-height:0; }
+}
+@media(max-width:560px) {
+ .nantor-info-page { padding:16px 14px 38px; }
+ .nantor-info-hero { min-height:380px; padding:25px 21px; border-radius:23px; }
+ .nantor-info-hero h1 { font-size:39px; }
+ .nantor-info-hero p { max-width:90%; font-size:11px; }
+ .nantor-info-hero-orb { top:auto; bottom:-130px; right:-40px; transform:none; width:230px; height:230px; opacity:.55; }
+ .nantor-info-hero-orb div { width:125px; height:125px; }
+ .nantor-info-story-copy,.nantor-info-values { padding:23px; border-radius:21px; }
+ .nantor-info-bottom { padding:28px 18px; border-radius:22px; }
+ .nantor-contact-page { padding:16px 14px 38px !important; }
+ .nantor-contact-page > div > div:first-child { padding:23px; border-radius:22px; }
+}
