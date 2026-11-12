@@ -3,6 +3,7 @@ import { Activity, AlertTriangle, Package, ShoppingBag, Wallet } from "lucide-re
 import type { CustomerOrder, Product } from "../../types";
 import { orderService } from "../../services/orderService";
 import { formatFCFA } from "../../utils/formatters";
+import { config } from "../../config/environment";
 
 const statusNames: Record<string,string> = {
   pending_confirmation:"À confirmer", confirmed:"Confirmée", preparing:"En préparation",
@@ -15,7 +16,7 @@ export const OverviewPanel: React.FC<{products:Product[]}> = ({products}) => {
   useEffect(()=>{orderService.list().then(setOrders).catch(e=>setError(e instanceof Error?e.message:"Les commandes sont indisponibles.")).finally(()=>setLoading(false));},[]);
   const revenue=useMemo(()=>orders.filter(o=>o.status==="delivered"&&o.paymentStatus==="paid_on_delivery").reduce((sum,o)=>sum+(o.total??0),0),[orders]);
   const pending=orders.filter(o=>!["delivered","cancelled"].includes(o.status)).length;
-  const lowStock=products.filter(p=>(p.stockCount??0)<=(p.lowStockThreshold??0));
+  const lowStock=products.filter(p=>(p.stockCount??0)<=(p.lowStockThreshold??config.shop.stockAlertThreshold));
   const recent=[...orders].sort((a,b)=>b.createdAt.localeCompare(a.createdAt)).slice(0,6);
   return <section className="space-y-5">
     <header><p className="text-xs font-bold uppercase tracking-widest text-[#1769FF]">Vue d'ensemble</p><h2 className="text-2xl font-bold text-slate-900">Bonjour, bienvenue dans votre boutique.</h2><p className="text-sm text-slate-500">Les indicateurs se mettent à jour à partir des commandes et du catalogue.</p></header>

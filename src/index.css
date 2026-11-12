@@ -161,3 +161,43 @@ button { cursor: pointer; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior:auto !important; animation-duration:.01ms !important; transition-duration:.01ms !important; }
 }
+
+/* Optional dark theme, applied from owner-managed shop settings. */
+html[data-theme="dark"], html[data-theme="dark"] body, html[data-theme="dark"] #root {
+  background: #0f172a !important;
+  color: #e2e8f0;
+}
+html[data-theme="dark"] body { background: #0f172a !important; }
+html[data-theme="dark"] .nantor-home { background: #0f172a; }
+html[data-theme="dark"] .nantor-category-panel,
+html[data-theme="dark"] .nantor-bestsellers-panel,
+html[data-theme="dark"] .nantor-featured-card { background: #111827; color: #e2e8f0; box-shadow: 0 18px 50px rgba(0,0,0,.2); }
+html[data-theme="dark"] .nantor-category-tile,
+html[data-theme="dark"] .nantor-product-image-wrap,
+html[data-theme="dark"] .nantor-featured-image { background: #1e293b; }
+html[data-theme="dark"] .nantor-category-copy h2,
+html[data-theme="dark"] .nantor-products-heading h2,
+html[data-theme="dark"] .nantor-featured-heading h2,
+html[data-theme="dark"] .nantor-featured-details h3,
+html[data-theme="dark"] .nantor-product-name { color: #f8fafc; }
+html[data-theme="dark"] .nantor-category-copy p,
+html[data-theme="dark"] .nantor-product-description,
+html[data-theme="dark"] .nantor-featured-details p { color: #94a3b8; }
+html[data-theme="dark"] .nantor-product-image-wrap img,
+html[data-theme="dark"] .nantor-featured-image img { mix-blend-mode: normal; }
+html[data-theme="dark"] .nantor-service-strip { background: rgba(30,41,59,.8); border-color: #334155; }
+html[data-theme="dark"] header { background: rgba(15,23,42,.96) !important; border-color: #334155 !important; }
+html[data-theme="dark"] header .bg-slate-50 { background: #111827 !important; }
+html[data-theme="dark"] header .text-slate-900,
+html[data-theme="dark"] .text-slate-900,
+html[data-theme="dark"] .text-slate-800 { color: #f8fafc !important; }
+html[data-theme="dark"] .text-slate-700,
+html[data-theme="dark"] .text-slate-600 { color: #cbd5e1 !important; }
+html[data-theme="dark"] .text-slate-500 { color: #94a3b8 !important; }
+html[data-theme="dark"] .bg-white { background: #111827 !important; color: #e2e8f0; }
+html[data-theme="dark"] .bg-slate-50,
+html[data-theme="dark"] .bg-slate-100 { background: #1e293b !important; }
+html[data-theme="dark"] .border-slate-200,
+html[data-theme="dark"] .border-slate-100 { border-color: #334155 !important; }
+html[data-theme="dark"] [class~="bg-[#afbdc5]"] { background: #0f172a !important; }
+html[data-theme="dark"] footer { background: #0b1220 !important; border-color: #334155 !important; }

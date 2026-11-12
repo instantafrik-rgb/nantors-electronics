@@ -48,7 +48,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
   const [featured, setFeatured] = useState(false);
   const [isAvailable, setIsAvailable] = useState(false);
   const [stockCount, setStockCount] = useState("0");
-  const [lowStockThreshold, setLowStockThreshold] = useState("3");
+  const [lowStockThreshold, setLowStockThreshold] = useState(String(config.shop.stockAlertThreshold));
   const [sku, setSku] = useState("");
   const [badge, setBadge] = useState("");
   const [previewMode, setPreviewMode] = useState(false);
@@ -78,7 +78,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
 
       setFeatured(productToEdit.featured);
       setStockCount(String(productToEdit.stockCount ?? 0));
-      setLowStockThreshold(String(productToEdit.lowStockThreshold ?? 3));
+      setLowStockThreshold(String(productToEdit.lowStockThreshold ?? config.shop.stockAlertThreshold));
       setSku(productToEdit.sku || "");
       setIsAvailable(productToEdit.isAvailable);
       setBadge(productToEdit.badge || "");
@@ -95,7 +95,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       setSpecKeys([""]);
       setSpecVals([""]);
       setStockCount("0");
-      setLowStockThreshold("3");
+      setLowStockThreshold(String(config.shop.stockAlertThreshold));
       setSku("");
       setFeatured(false);
       setIsAvailable(false);

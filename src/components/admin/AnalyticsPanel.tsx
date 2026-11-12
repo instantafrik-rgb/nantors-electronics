@@ -3,6 +3,7 @@ import { Download, TrendingUp } from "lucide-react";
 import { orderService } from "../../services/orderService";
 import type { CustomerOrder, Product } from "../../types";
 import { formatFCFA } from "../../utils/formatters";
+import { config } from "../../config/environment";
 
 type Period = "7" | "30" | "90" | "all";
 export const AnalyticsPanel: React.FC<{products: Product[]}> = ({products}) => {
@@ -27,7 +28,7 @@ export const AnalyticsPanel: React.FC<{products: Product[]}> = ({products}) => {
     return [...map.values()].sort((a,b)=>b.quantity-a.quantity).slice(0,5);
   },[paid]);
   const sourceCounts=["website","whatsapp","admin"].map(source=>({source,count:scoped.filter(o=>o.source===source).length}));
-  const lowStock=products.filter(p=>(p.stockCount??0)<=(p.lowStockThreshold??0));
+  const lowStock=products.filter(p=>(p.stockCount??0)<=(p.lowStockThreshold??config.shop.stockAlertThreshold));
   const exportCsv=()=>{
     const rows=[["Commande","Date de création","Date de paiement","Client","Téléphone","Source","Statut","Paiement","Sous-total","Livraison","Total"],...scoped.map(o=>[o.orderNumber,o.createdAt,o.paidAt??"",o.customerName,o.customerPhone,o.source,o.status,o.paymentStatus,String(o.subtotal),o.deliveryFee===null?"":String(o.deliveryFee),o.total===null?"":String(o.total)])];
     const csv=rows.map(row=>row.map(value=>`"${String(value).replace(/"/g,'""')}"`).join(";")).join("\n");
