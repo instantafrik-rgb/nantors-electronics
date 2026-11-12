@@ -131,3 +131,34 @@ export function assertPaymentAllowed(status: OrderStatus, paymentStatus: Payment
 export function isSameIdempotentOrder(existing: Record<string, unknown>, requestId: string): boolean {
   return existing.idempotencyKey === requestId && ["website", "whatsapp", "admin"].includes(String(existing.source));
 }
+
+
+export function calculateOrderTotalWithDeliveryFee(input: {
+  status: unknown;
+  currentUpdatedAt: unknown;
+  expectedUpdatedAt: unknown;
+  subtotal: unknown;
+  deliveryFee: unknown;
+}): number {
+  if (input.status !== "pending_confirmation") {
+    throw new OrderValidationError("failed-precondition", "Les frais ne peuvent être modifiés qu'avant confirmation.");
+  }
+  if (typeof input.currentUpdatedAt !== "string" ||
+      typeof input.expectedUpdatedAt !== "string" ||
+      input.expectedUpdatedAt.length > 50 ||
+      input.expectedUpdatedAt !== input.currentUpdatedAt) {
+    throw new OrderValidationError("failed-precondition", "Cette commande a été modifiée depuis son affichage. Actualisez-la avant de changer les frais.");
+  }
+  if (typeof input.subtotal !== "number" || !Number.isSafeInteger(input.subtotal) || input.subtotal <= 0) {
+    throw new OrderValidationError("failed-precondition", "Le sous-total de la commande est invalide.");
+  }
+  if (typeof input.deliveryFee !== "number" || !Number.isSafeInteger(input.deliveryFee) ||
+      input.deliveryFee < 0 || input.deliveryFee > 10000000) {
+    throw new OrderValidationError("invalid-argument", "Les frais de livraison sont invalides.");
+  }
+  const total = input.subtotal + input.deliveryFee;
+  if (!Number.isSafeInteger(total)) {
+    throw new OrderValidationError("failed-precondition", "Le total de la commande dépasse la limite autorisée.");
+  }
+  return total;
+}
