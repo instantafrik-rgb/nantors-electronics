@@ -3,31 +3,26 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from "react";
-import {
-  ArrowRight,
-  MessageSquare,
-  Sparkles,
-  Flame,
-  Clock,
-} from "lucide-react";
-import { HeroBanner } from "../home/HeroBanner";
-import { CategoryGrid } from "../home/CategoryGrid";
-import { ProductSpotlight } from "../home/ProductSpotlight";
-import { ProductCard } from "../catalog/ProductCard";
+import React, { useMemo, useState } from "react";
+import { ArrowRight, ArrowUpRight, Sparkles, Headphones, Zap, Truck, CreditCard, MessageCircle } from "lucide-react";
 import { CategoryInfo, Product } from "../../types";
-import { generateWhatsAppInquiryUrl } from "../../utils/formatters";
+import { formatFCFA, generateWhatsAppInquiryUrl } from "../../utils/formatters";
 
 interface HomePageProps {
   products: Product[];
   featuredProducts: Product[];
   categories: CategoryInfo[];
   onOpenDetails: (product: Product) => void;
-  onNavigate: (
-    page: "home" | "catalog" | "about" | "contact" | "admin",
-  ) => void;
+  onNavigate: (page: "home" | "catalog" | "about" | "contact" | "admin") => void;
   onSelectCategory: (categorySlug: string) => void;
 }
+
+const categoryFallbacks = [
+  { name: "Audio & écouteurs", description: "Le son qui vous accompagne partout", slug: "audio-ecouteurs" },
+  { name: "Chargeurs & énergie", description: "Rechargez vos appareils simplement", slug: "chargeurs" },
+  { name: "Accessoires mobile", description: "Les essentiels de votre smartphone", slug: "accessoires-telephonie" },
+  { name: "Informatique & connectique", description: "Des connexions plus simples au quotidien", slug: "accessoires-informatique" },
+];
 
 export const HomePage: React.FC<HomePageProps> = ({
   products,
@@ -37,207 +32,142 @@ export const HomePage: React.FC<HomePageProps> = ({
   onNavigate,
   onSelectCategory,
 }) => {
-  // Tab state: 'incontournables' vs 'nouveautes'
-  const [activeTab, setActiveTab] = useState<"incontournables" | "nouveautes">(
-    "incontournables",
-  );
+  const [activeTab, setActiveTab] = useState<"bestsellers" | "new">("bestsellers");
+  const availableProducts = useMemo(() => products.filter((product) => product.isAvailable), [products]);
+  const bestsellers = (featuredProducts.length ? featuredProducts : availableProducts).slice(0, 4);
+  const newest = [...availableProducts]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 4);
+  const visibleProducts = activeTab === "bestsellers" ? bestsellers : newest;
+  const spotlight = bestsellers[0] || availableProducts[0] || null;
+  const displayCategories = categories.length
+    ? categories.slice(0, 4)
+    : categoryFallbacks.map((item) => ({ ...item, id: item.slug, icon: "" }));
+  const whatsappUrl = generateWhatsAppInquiryUrl("Bonjour, je souhaite découvrir vos accessoires high-tech.");
 
-  // Filter available products
-  const availableProducts = products.filter((p) => p.isAvailable);
-
-  // Incontournables: featured items, or top items
-  const incontournables =
-    featuredProducts.length > 0
-      ? featuredProducts.slice(0, 6)
-      : availableProducts.slice(0, 6);
-
-  // Nouveautés: newest first sorted by createdAt
-  const nouveautes = [...availableProducts]
-    .sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    )
-    .slice(0, 6);
-
-  // Active collection to render
-  const currentCollection =
-    activeTab === "incontournables" ? incontournables : nouveautes;
-
-  // Real Spotlight Product: first featured item or first available item
-  const spotlightProduct = incontournables[0] || availableProducts[0] || null;
-
-  // Dynamic minimum price for Hero Banner computed from available catalog products
-  const minPrice =
-    availableProducts.length > 0
-      ? Math.min(...availableProducts.map((p) => p.price))
-      : 0;
-
-  const emptyWaUrl = generateWhatsAppInquiryUrl(
-    "Disponibilité d'une référence spécifique à Lomé",
-  );
-  const bottomWaUrl = generateWhatsAppInquiryUrl(
-    "Demande de conseils avant commande (Togo)",
-  );
+  const categoryTiles = displayCategories.map((category) => {
+    const categoryProducts = availableProducts.filter((product) => product.category === category.slug);
+    const preview = categoryProducts[0] || products.find((product) => product.category === category.slug);
+    return { category, count: categoryProducts.length, image: preview?.images?.[0] };
+  });
 
   return (
-    <div className="space-y-0 bg-white text-slate-900">
-      {/* 1. Hero Banner with automated minimum price */}
-      <HeroBanner
-        onExploreCatalog={() => onNavigate("catalog")}
-        minPrice={minPrice}
-      />
-
-      {/* 2. Products Section with 2 Interactive Tabs: « Nos Incontournables » & « Nouveautés » */}
-      <section className="py-16 md:py-24 bg-slate-50 border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header Row with Segmented Tabs */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-            <div>
-              <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#1769FF] mb-2">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Sélection Spéciale</span>
+    <div className="nantor-home">
+      <div className="nantor-home-shell">
+        <div className="nantor-home-left">
+          <section className="nantor-category-panel" aria-labelledby="category-heading">
+            <div className="nantor-section-kicker"><span className="nantor-kicker-dot" /> L'univers Nantor's</div>
+            <div className="nantor-section-heading">
+              <div>
+                <h1 id="category-heading">La technologie, <span>à votre façon.</span></h1>
+                <p>Les accessoires qui simplifient votre quotidien, sélectionnés avec soin.</p>
               </div>
-              <h2 className="font-display text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-                {activeTab === "incontournables"
-                  ? "Nos Incontournables du Moment"
-                  : "Derniers Arrivages & Nouveautés"}
-              </h2>
+              <button className="nantor-text-link" onClick={() => onNavigate("catalog")}>Tout explorer <ArrowUpRight size={16} /></button>
             </div>
 
-            {/* Functional Tabs Control in Editorial Style */}
-            <div className="flex items-center gap-1 p-1 bg-slate-50 rounded-xl border border-slate-200 self-start md:self-auto">
-              <button
-                type="button"
-                onClick={() => setActiveTab("incontournables")}
-                className={`px-4 py-2 text-xs font-bold rounded-lg transition-all duration-200 flex items-center gap-2 cursor-pointer ${
-                  activeTab === "incontournables"
-                    ? "bg-[#1769FF] text-white shadow-sm"
-                    : "text-slate-500 hover:text-slate-900"
-                }`}
-              >
-                <Flame className="w-3.5 h-3.5" />
-                <span>Nos incontournables</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveTab("nouveautes")}
-                className={`px-4 py-2 text-xs font-bold rounded-lg transition-all duration-200 flex items-center gap-2 cursor-pointer ${
-                  activeTab === "nouveautes"
-                    ? "bg-[#1769FF] text-white shadow-sm"
-                    : "text-slate-500 hover:text-slate-900"
-                }`}
-              >
-                <Clock className="w-3.5 h-3.5" />
-                <span>Nouveautés</span>
-              </button>
+            <div className="nantor-category-grid">
+              {categoryTiles.map(({ category, count, image }, index) => (
+                <button
+                  type="button"
+                  key={category.id}
+                  onClick={() => onSelectCategory(category.slug)}
+                  className={`nantor-category-tile nantor-category-tile-${index + 1}`}
+                >
+                  <div className="nantor-category-copy">
+                    <span className="nantor-category-count">{count ? `${count} article${count > 1 ? "s" : ""}` : "À découvrir"}</span>
+                    <h2>{category.name}</h2>
+                    <p>{category.description}</p>
+                    <span className="nantor-category-link">Explorer la catégorie <ArrowRight size={15} /></span>
+                  </div>
+                  {image ? <img src={image} alt="" loading="lazy" className="nantor-category-image" /> : <div className="nantor-category-placeholder"><Headphones size={76} strokeWidth={1} /></div>}
+                </button>
+              ))}
             </div>
-          </div>
+          </section>
 
-          {/* 3-Column Desktop Grid OR Elegant Empty State */}
-          {availableProducts.length > 0 ? (
-            <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-                {currentCollection.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    onOpenDetails={onOpenDetails}
-                  />
+          <section className="nantor-bestsellers-panel" aria-labelledby="bestsellers-heading">
+            <div className="nantor-products-heading">
+              <div>
+                <span className="nantor-section-kicker"><Sparkles size={14} /> La sélection du moment</span>
+                <h2 id="bestsellers-heading">{activeTab === "bestsellers" ? "Les bestsellers" : "Les nouveautés"}</h2>
+              </div>
+              <div className="nantor-products-actions">
+                <div className="nantor-tabs" role="tablist" aria-label="Sélection de produits">
+                  <button role="tab" aria-selected={activeTab === "bestsellers"} className={activeTab === "bestsellers" ? "active" : ""} onClick={() => setActiveTab("bestsellers")}>Populaires</button>
+                  <button role="tab" aria-selected={activeTab === "new"} className={activeTab === "new" ? "active" : ""} onClick={() => setActiveTab("new")}>Nouveautés</button>
+                </div>
+                <button className="nantor-text-link" onClick={() => onNavigate("catalog")}>Voir tout <ArrowRight size={15} /></button>
+              </div>
+            </div>
+
+            {visibleProducts.length ? (
+              <div className="nantor-product-grid">
+                {visibleProducts.map((product) => (
+                  <button type="button" key={product.id} className="nantor-product-tile" onClick={() => onOpenDetails(product)}>
+                    <div className="nantor-product-image-wrap">
+                      {product.images?.[0] ? <img src={product.images[0]} alt={product.name} loading="lazy" /> : <div className="nantor-category-placeholder"><Zap size={44} /></div>}
+                      <span className="nantor-product-category">{product.categoryLabel || product.category}</span>
+                      {product.badge && <span className="nantor-product-badge">{product.badge}</span>}
+                      <span className="nantor-product-open"><ArrowUpRight size={17} /></span>
+                    </div>
+                    <div className="nantor-product-meta">
+                      <span className="nantor-product-name">{product.name}</span>
+                      <span className="nantor-product-price">{formatFCFA(product.price)}</span>
+                    </div>
+                    <span className="nantor-product-description">{product.shortDescription}</span>
+                  </button>
                 ))}
               </div>
+            ) : (
+              <div className="nantor-empty-products">
+                <p>Les prochains arrivages se préparent.</p>
+                <a href={whatsappUrl} target={whatsappUrl.startsWith("#") ? undefined : "_blank"} rel="noopener noreferrer">Demander une disponibilité <ArrowRight size={14} /></a>
+              </div>
+            )}
+          </section>
+        </div>
 
-              {/* Bottom link to full catalog */}
-              <div className="mt-14 text-center">
-                <button
-                  onClick={() => onNavigate("catalog")}
-                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl border border-slate-200 text-xs font-bold uppercase tracking-wider text-slate-900 hover:text-white hover:bg-[#1769FF] hover:border-[#1769FF] bg-slate-50 transition-all shadow-sm group cursor-pointer"
-                >
-                  <span>
-                    Découvrir l'ensemble du catalogue (
-                    {availableProducts.length} articles disponibles)
-                  </span>
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </button>
+        <aside className="nantor-home-right">
+          <section className="nantor-promo-card">
+            <span className="nantor-promo-eyebrow">NANTOR'S ELECTRONICS · LOMÉ</span>
+            <h2>La nouvelle expérience <span>high-tech.</span></h2>
+            <p>Découvrez des accessoires utiles, un choix simple et un accompagnement direct sur WhatsApp.</p>
+            <button onClick={() => onNavigate("catalog")}>Parcourir les produits <ArrowRight size={16} /></button>
+            <div className="nantor-promo-orbit" aria-hidden="true" />
+          </section>
+
+          {spotlight && (
+            <section className="nantor-featured-card">
+              <div className="nantor-featured-heading">
+                <div>
+                  <span className="nantor-section-kicker">À ne pas manquer</span>
+                  <h2>Produit vedette</h2>
+                </div>
+                <span className="nantor-featured-mark"><Sparkles size={15} /></span>
               </div>
-            </>
-          ) : (
-            <div className="bg-white rounded-3xl border border-slate-200 p-8 sm:p-12 text-center max-w-xl mx-auto space-y-4">
-              <div className="w-12 h-12 rounded-2xl bg-[#1769FF]/10 border border-[#1769FF]/20 text-[#1769FF] flex items-center justify-center mx-auto">
-                <Sparkles className="w-6 h-6" />
+              <button type="button" className="nantor-featured-image" onClick={() => onOpenDetails(spotlight)}>
+                {spotlight.images?.[0] ? <img src={spotlight.images[0]} alt={spotlight.name} loading="lazy" /> : <div className="nantor-category-placeholder"><Zap size={64} /></div>}
+                <span className="nantor-featured-tag">{spotlight.categoryLabel || spotlight.category}</span>
+                <span className="nantor-featured-arrow"><ArrowUpRight size={19} /></span>
+              </button>
+              <div className="nantor-featured-details">
+                <div>
+                  <h3>{spotlight.name}</h3>
+                  <p>{spotlight.shortDescription}</p>
+                </div>
+                <strong>{formatFCFA(spotlight.price)}</strong>
               </div>
-              <h3 className="font-display font-bold text-lg text-slate-900">
-                Arrivages en cours
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-500 leading-relaxed max-w-md mx-auto font-light">
-                Les nouveaux arrivages sont en cours de mise en rayon à Lomé.
-                Contactez-nous directement sur WhatsApp pour vérifier la
-                disponibilité d'une référence.
-              </p>
-              <div className="pt-2">
-                <a
-                  href={emptyWaUrl}
-                  target={emptyWaUrl.startsWith("#") ? undefined : "_blank"}
-                  rel={
-                    emptyWaUrl.startsWith("#")
-                      ? undefined
-                      : "noopener noreferrer"
-                  }
-                  className="inline-flex items-center gap-2 px-5 py-3 bg-[#1769FF] hover:bg-[#0f56d9] text-white font-bold text-xs rounded-xl shadow-md transition-all active:scale-98"
-                >
-                  <MessageSquare className="w-4 h-4 fill-[#111111] stroke-none" />
-                  <span>Demander une référence sur WhatsApp</span>
-                </a>
-              </div>
-            </div>
+              <button className="nantor-featured-cta" onClick={() => onOpenDetails(spotlight)}>Découvrir le produit <ArrowRight size={16} /></button>
+            </section>
           )}
-        </div>
-      </section>
 
-      {/* 3. Section « Produit Phare » */}
-      <ProductSpotlight
-        product={spotlightProduct}
-        onOpenDetails={onOpenDetails}
-      />
-
-      {/* 4. Category Grid enriched with real counts & previews */}
-      <CategoryGrid
-        categories={categories}
-        products={products}
-        onSelectCategory={(slug) => {
-          onSelectCategory(slug);
-          onNavigate("catalog");
-        }}
-      />
-
-      {/* 5. Brand Story & Technical Manifesto */}
-
-      {/* 6. Direct WhatsApp Support Banner in Deep Black with Official Orange Button */}
-      <section className="py-16 bg-slate-50 text-slate-900 border-t border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="space-y-1.5 text-center md:text-left">
-            <h3 className="font-display text-xl sm:text-2xl font-bold text-slate-900">
-              Une question avant de commander à Lomé ou au Togo ?
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-500 font-light">
-              Notre équipe vous conseille en direct sur WhatsApp pour confirmer
-              la compatibilité avec vos équipements.
-            </p>
-          </div>
-
-          <a
-            href={bottomWaUrl}
-            target={bottomWaUrl.startsWith("#") ? undefined : "_blank"}
-            rel={
-              bottomWaUrl.startsWith("#") ? undefined : "noopener noreferrer"
-            }
-            className="px-6 py-3.5 bg-[#1769FF] hover:bg-[#0f56d9] text-white font-bold text-sm rounded-xl shadow-[0_2px_15px_rgba(255,107,0,0.3)] hover:shadow-[0_4px_25px_rgba(255,107,0,0.45)] transition-all flex items-center gap-2 shrink-0 active:scale-98"
-          >
-            <MessageSquare className="w-4 h-4 fill-white stroke-none" />
-            <span>Écrire sur WhatsApp maintenant</span>
-          </a>
-        </div>
-      </section>
+          <section className="nantor-service-strip">
+            <div><Truck size={18} /><span>Livraison à Lomé</span></div>
+            <div><CreditCard size={18} /><span>Paiement à la livraison</span></div>
+            <div><MessageCircle size={18} /><span>Conseil sur WhatsApp</span></div>
+          </section>
+        </aside>
+      </div>
     </div>
   );
 };
