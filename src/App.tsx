@@ -30,6 +30,7 @@ import {
   AdminUser,
 } from "./types";
 import { productService } from "./services/productService";
+import { applyShopSettings, getShopSettings } from "./services/settingsService";
 import { authService } from "./services/authService";
 import { MessageSquare, Loader2 } from "lucide-react";
 import { generateWhatsAppInquiryUrl } from "./utils/formatters";
@@ -114,6 +115,11 @@ export default function App() {
   const loadData = useCallback(async () => {
     try {
       setDataLoadError("");
+      try {
+        applyShopSettings(await getShopSettings());
+      } catch (settingsError) {
+        console.warn("Paramètres publics de la boutique indisponibles; configuration locale conservée.", settingsError);
+      }
       const isSuperAdmin = authService.isCurrentFirebaseUserSuperAdmin();
       const [loadedCats, loadedProds] = await Promise.all([
         productService.getCategories(),

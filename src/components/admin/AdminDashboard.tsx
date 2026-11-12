@@ -28,6 +28,7 @@ import { InventoryPanel } from './InventoryPanel';
 import { CustomersPanel } from './CustomersPanel';
 import { AnalyticsPanel } from './AnalyticsPanel';
 import { OverviewPanel } from './OverviewPanel';
+import { SettingsPanel } from './SettingsPanel';
 
 interface AdminDashboardProps {
   products: Product[];
@@ -46,7 +47,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onOpenProductDetails,
   onExitAdmin,
 }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'categories' | 'inventory' | 'customers' | 'analytics'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'categories' | 'inventory' | 'customers' | 'analytics' | 'settings'>('overview');
   const [search, setSearch] = useState('');
   const [selectedCat, setSelectedCat] = useState('all');
   const [formModalOpen, setFormModalOpen] = useState(false);
@@ -215,6 +216,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <button onClick={() => setActiveTab('inventory')} className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${activeTab === 'inventory' ? 'bg-[#1769FF] text-white' : 'text-slate-600 hover:bg-slate-100'}`}>Stock</button>
           <button onClick={() => setActiveTab('customers')} className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${activeTab === 'customers' ? 'bg-[#1769FF] text-white' : 'text-slate-600 hover:bg-slate-100'}`}>Clients</button>
           <button onClick={() => setActiveTab('analytics')} className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${activeTab === 'analytics' ? 'bg-[#1769FF] text-white' : 'text-slate-600 hover:bg-slate-100'}`}>Statistiques</button>
+          <button onClick={() => setActiveTab('settings')} className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${activeTab === 'settings' ? 'bg-[#1769FF] text-white' : 'text-slate-600 hover:bg-slate-100'}`}>Paramètres</button>
         </nav>
 
         {activeTab === 'orders' ? (
@@ -227,6 +229,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <CustomersPanel />
         ) : activeTab === 'analytics' ? (
           <AnalyticsPanel products={products} />
+        ) : activeTab === 'settings' ? (
+          <SettingsPanel onSaved={onRefreshData} />
         ) : activeTab === 'overview' ? (
           <OverviewPanel products={products} />
         ) : (

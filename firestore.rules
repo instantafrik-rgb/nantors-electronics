@@ -123,6 +123,35 @@ service cloud.firestore {
     // -------------------------------------------------------------
     // 7. RÈGLES DE LA COLLECTION DEMANDES DE CONTACT
     // -------------------------------------------------------------
+    function isValidShopSettings(data) {
+      let allowed = [
+        'name', 'tagline', 'logoUrl', 'whatsappNumber', 'phoneFormatted', 'email',
+        'location', 'showroomAddress', 'workingHours', 'currency', 'paymentMethod',
+        'stockAlertThreshold', 'theme', 'updatedAt'
+      ];
+      return data.keys().hasOnly(allowed) &&
+        data.name is string && data.name.size() >= 2 && data.name.size() <= 100 &&
+        data.tagline is string && data.tagline.size() <= 200 &&
+        data.logoUrl is string && data.logoUrl.size() <= 1500 &&
+        data.whatsappNumber is string && data.whatsappNumber.size() <= 20 &&
+        data.phoneFormatted is string && data.phoneFormatted.size() <= 40 &&
+        data.email is string && data.email.size() <= 150 &&
+        data.location is string && data.location.size() <= 150 &&
+        data.showroomAddress is string && data.showroomAddress.size() <= 250 &&
+        data.workingHours is string && data.workingHours.size() <= 150 &&
+        data.currency == 'XOF' &&
+        data.paymentMethod == 'cash_on_delivery' &&
+        data.stockAlertThreshold is int && data.stockAlertThreshold >= 0 && data.stockAlertThreshold <= 100000 &&
+        data.theme in ['light', 'dark'] &&
+        data.updatedAt is string && data.updatedAt.size() <= 50;
+    }
+
+    match /settings/{documentId} {
+      allow read: if documentId == 'shop';
+      allow create, update: if isSuperAdmin() && documentId == 'shop' && isValidShopSettings(request.resource.data);
+      allow delete: if false;
+    }
+
     match /inquiries/{inquiryId} {
       allow create: if isValidInquiry(request.resource.data);
       allow read, update, delete: if isSuperAdmin();
