@@ -4,48 +4,171 @@ import type { CustomerOrder, OrderItem, OrderStatus, Product } from "../../types
 import { orderService } from "../../services/orderService";
 import { formatFCFA } from "../../utils/formatters";
 
-const statusLabels: Record<OrderStatus,string> = {
-  pending_confirmation:"À confirmer", confirmed:"Confirmée", preparing:"En préparation",
-  out_for_delivery:"En livraison", delivered:"Livrée", cancelled:"Annulée"
+const statusLabels: Record<OrderStatus, string> = {
+  pending_confirmation: "À confirmer",
+  confirmed: "Confirmée",
+  preparing: "En préparation",
+  out_for_delivery: "En livraison",
+  delivered: "Livrée",
+  cancelled: "Annulée",
 };
 
+const nextStatuses: Record<OrderStatus, OrderStatus[]> = {
+  pending_confirmation: ["confirmed", "cancelled"],
+  confirmed: ["preparing", "cancelled"],
+  preparing: ["out_for_delivery", "cancelled"],
+  out_for_delivery: ["delivered", "cancelled"],
+  delivered: [],
+  cancelled: [],
+};
+
+const availableForOrder = (product: Product) =>
+  product.isAvailable && Number.isSafeInteger(product.stockCount) && (product.stockCount ?? 0) > 0;
+
 export const OrdersPanel: React.FC<{ products: Product[]; onRefreshProducts: () => void }> = ({ products, onRefreshProducts }) => {
-  const [orders,setOrders]=useState<CustomerOrder[]>([]);
-  const [loading,setLoading]=useState(true);
-  const [busy,setBusy]=useState(false);
-  const [error,setError]=useState("");
-  const [search,setSearch]=useState("");
-  const [filter,setFilter]=useState("all");
-  const [showForm,setShowForm]=useState(false);
-  const [feeFor,setFeeFor]=useState<string|null>(null);
-  const [fees,setFees]=useState<Record<string,string>>({});
-  const [form,setForm]=useState({source:"whatsapp" as "whatsapp"|"admin",customerName:"",customerPhone:"",city:"",address:"",notes:"",items:[{productId:"",quantity:1}]});
+  const [orders, setOrders] = useState<CustomerOrder[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("all");
+  const [showForm, setShowForm] = useState(false);
+  const [feeFor, setFeeFor] = useState<string | null>(null);
+  const [fees, setFees] = useState<Record<string, string>>({});
+  const [form, setForm] = useState({
+    source: "whatsapp" as "whatsapp" | "admin",
+    customerName: "", customerPhone: "", city: "", address: "", notes: "",
+    items: [{ productId: "", quantity: 1 }],
+  });
 
-  const load=async()=>{setLoading(true);setError("");try{setOrders(await orderService.list());}catch(e){setError(e instanceof Error?e.message:"Chargement des commandes impossible.");}finally{setLoading(false);}};
-  useEffect(()=>{void load();},[]);
-  const filtered=useMemo(()=>orders.filter(o=>(filter==="all"||o.status===filter)&&[o.orderNumber,o.customerName,o.customerPhone].join(" ").toLowerCase().includes(search.toLowerCase())),[orders,filter,search]);
+  const load = async () => {
+    setLoading(true);
+    setError("");
+    try { setOrders(await orderService.list()); }
+    catch (e) { setError(e instanceof Error ? e.message : "Chargement des commandes impossible."); }
+    finally { setLoading(false); }
+  };
+  useEffect(() => { void load(); }, []);
 
-  const create=async()=>{setBusy(true);setError("");try{const items:OrderItem[]=form.items.map(line=>{const product=products.find(p=>p.id===line.productId);if(!product)throw new Error("Choisissez un produit pour chaque ligne.");if(!Number.isInteger(line.quantity)||line.quantity<1)throw new Error("Chaque quantité doit être un entier positif.");return {productId:product.id,productName:product.name,unitPrice:product.price,quantity:line.quantity};});if(!items.length)throw new Error("Ajoutez au moins un article.");await orderService.createManual({source:form.source,customerName:form.customerName,customerPhone:form.customerPhone,city:form.city,address:form.address,notes:form.notes,items});setShowForm(false);setForm({source:"whatsapp",customerName:"",customerPhone:"",city:"",address:"",notes:"",items:[{productId:"",quantity:1}]});await load();}catch(e){setError(e instanceof Error?e.message:"Création impossible.");}finally{setBusy(false);}};
-  const changeStatus=async(order:CustomerOrder,status:OrderStatus)=>{if(status==="confirmed"&&!window.confirm("Confirmer cette commande ? Le stock sera déduit maintenant."))return;if(status==="cancelled"&&!window.confirm("Annuler cette commande ? Le stock réservé sera restitué si nécessaire."))return;setBusy(true);setError("");try{await orderService.updateStatus(order.id,status);await load();onRefreshProducts();}catch(e){setError(e instanceof Error?e.message:"Mise à jour impossible.");}finally{setBusy(false);}};
-  const saveFee=async(id:string)=>{setBusy(true);setError("");try{await orderService.setDeliveryFee(id,Number(fees[id]));setFeeFor(null);await load();}catch(e){setError(e instanceof Error?e.message:"Enregistrement impossible.");}finally{setBusy(false);}};
-  const paid=async(id:string)=>{setBusy(true);try{await orderService.markPaid(id);await load();}catch(e){setError(e instanceof Error?e.message:"Mise à jour impossible.");}finally{setBusy(false);}};
+  const filtered = useMemo(() => orders.filter((order) =>
+    (filter === "all" || order.status === filter) &&
+    [order.orderNumber, order.customerName, order.customerPhone].join(" ").toLowerCase().includes(search.toLowerCase())
+  ), [orders, filter, search]);
+
+  const create = async () => {
+    setBusy(true);
+    setError("");
+    try {
+      if (!form.customerName.trim() || !form.customerPhone.trim() || !form.city.trim()) {
+        throw new Error("Renseignez le nom, le téléphone et la ville ou le quartier du client.");
+      }
+      const items: OrderItem[] = form.items.map((line) => {
+        const product = products.find((entry) => entry.id === line.productId);
+        if (!product) throw new Error("Choisissez un produit pour chaque ligne.");
+        if (!availableForOrder(product)) throw new Error(`${product.name} est masqué, sans stock ou avec un stock à renseigner.`);
+        if (!Number.isSafeInteger(line.quantity) || line.quantity < 1 || line.quantity > (product.stockCount ?? 0)) {
+          throw new Error(`La quantité demandée dépasse le stock disponible de ${product.name}.`);
+        }
+        return { productId: product.id, productName: product.name, unitPrice: product.price, quantity: line.quantity };
+      });
+      if (!items.length) throw new Error("Ajoutez au moins un article.");
+      await orderService.createManual({
+        source: form.source, customerName: form.customerName, customerPhone: form.customerPhone,
+        city: form.city, address: form.address, notes: form.notes, items,
+      });
+      setShowForm(false);
+      setForm({ source: "whatsapp", customerName: "", customerPhone: "", city: "", address: "", notes: "", items: [{ productId: "", quantity: 1 }] });
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Création impossible.");
+    } finally { setBusy(false); }
+  };
+
+  const changeStatus = async (order: CustomerOrder, status: OrderStatus) => {
+    if (status === "confirmed" && !window.confirm("Confirmer cette commande ? Le stock sera déduit maintenant.")) return;
+    if (status === "cancelled" && !window.confirm("Annuler cette commande ? Le stock sera restitué si la commande avait été confirmée.")) return;
+    setBusy(true);
+    setError("");
+    try {
+      await orderService.updateStatus(order.id, status);
+      await load();
+      onRefreshProducts();
+    } catch (e) { setError(e instanceof Error ? e.message : "Mise à jour impossible."); }
+    finally { setBusy(false); }
+  };
+
+  const saveFee = async (id: string) => {
+    const raw = fees[id] ?? "";
+    if (!/^\d+$/.test(raw) || !Number.isSafeInteger(Number(raw))) {
+      setError("Saisissez les frais de livraison en FCFA sous forme de montant entier positif ou nul.");
+      return;
+    }
+    setBusy(true);
+    setError("");
+    try { await orderService.setDeliveryFee(id, Number(raw)); setFeeFor(null); await load(); }
+    catch (e) { setError(e instanceof Error ? e.message : "Enregistrement impossible."); }
+    finally { setBusy(false); }
+  };
+
+  const paid = async (id: string) => {
+    setBusy(true);
+    setError("");
+    try { await orderService.markPaid(id); await load(); }
+    catch (e) { setError(e instanceof Error ? e.message : "Mise à jour impossible."); }
+    finally { setBusy(false); }
+  };
 
   return <section className="space-y-5">
-    <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"><div><p className="text-xs uppercase tracking-widest text-[#1769FF] font-bold">Gestion commerciale</p><h2 className="text-2xl font-bold text-[#101828]">Commandes</h2><p className="text-sm text-slate-500">Toutes les commandes, au même endroit · Paiement à la livraison</p></div><div className="flex gap-2"><button onClick={()=>void load()} className="rounded-xl border border-slate-200 bg-white p-3 text-slate-600"><RefreshCw className="w-4 h-4"/></button><button onClick={()=>setShowForm(v=>!v)} className="rounded-xl bg-[#1769FF] px-4 py-2.5 text-sm font-semibold text-white flex items-center gap-2"><Plus className="w-4 h-4"/> Nouvelle commande</button></div></header>
-    {error&&<div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
-    {showForm&&<div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-3"><div className="flex justify-between"><h3 className="font-bold text-[#101828]">Saisie manuelle (WhatsApp / téléphone)</h3><button onClick={()=>setShowForm(false)}><X className="w-4 h-4"/></button></div><div className="grid sm:grid-cols-2 gap-3">
-      <input className="rounded-xl border p-3 text-sm" placeholder="Nom du client *" value={form.customerName} onChange={e=>setForm({...form,customerName:e.target.value})}/><input className="rounded-xl border p-3 text-sm" placeholder="Téléphone *" value={form.customerPhone} onChange={e=>setForm({...form,customerPhone:e.target.value})}/>
-      <input className="rounded-xl border p-3 text-sm" placeholder="Ville / quartier" value={form.city} onChange={e=>setForm({...form,city:e.target.value})}/><input className="rounded-xl border p-3 text-sm" placeholder="Adresse de livraison" value={form.address} onChange={e=>setForm({...form,address:e.target.value})}/>
-      <select className="rounded-xl border p-3 text-sm" value={form.source} onChange={e=>setForm({...form,source:e.target.value as "whatsapp"|"admin"})}><option value="whatsapp">WhatsApp</option><option value="admin">Téléphone / autre</option></select><div className="sm:col-span-2 space-y-2"><div className="flex items-center justify-between"><span className="text-xs font-semibold text-slate-600">Articles de la commande</span><button type="button" onClick={()=>setForm({...form,items:[...form.items,{productId:"",quantity:1}]})} className="text-xs font-semibold text-[#1769FF]">+ Ajouter un article</button></div>{form.items.map((line,index)=><div key={index} className="grid grid-cols-[1fr_100px_auto] gap-2"><select className="min-w-0 rounded-xl border p-3 text-sm" value={line.productId} onChange={e=>setForm({...form,items:form.items.map((item,i)=>i===index?{...item,productId:e.target.value}:item)})}><option value="">Sélectionner un produit *</option>{products.map(p=><option key={p.id} value={p.id}>{p.name} — {formatFCFA(p.price)}</option>)}</select><input aria-label="Quantité" type="number" min="1" className="w-full rounded-xl border p-3 text-sm" value={line.quantity} onChange={e=>setForm({...form,items:form.items.map((item,i)=>i===index?{...item,quantity:Number(e.target.value)}:item)})}/><button type="button" aria-label="Supprimer la ligne" disabled={form.items.length===1} onClick={()=>setForm({...form,items:form.items.filter((_,i)=>i!==index)})} className="rounded-xl border px-3 text-slate-500 disabled:opacity-30">×</button></div>)}</div><input className="rounded-xl border p-3 text-sm sm:col-span-2" placeholder="Note interne" value={form.notes} onChange={e=>setForm({...form,notes:e.target.value})}/>
-    </div><p className="text-xs text-slate-500">La commande reste « À confirmer ». Les prix sont relus depuis Firestore. Aucun stock n'est retiré avant confirmation. Les frais de livraison seront ajoutés séparément.</p><button disabled={busy} onClick={()=>void create()} className="rounded-xl bg-[#101828] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{busy?"Enregistrement…":"Enregistrer la commande"}</button></div>}
-    <div className="flex flex-col sm:flex-row gap-3 rounded-2xl border border-slate-200 bg-white p-3"><div className="relative flex-1"><Search className="absolute left-3 top-3 w-4 h-4 text-slate-400"/><input className="w-full rounded-xl border py-2.5 pl-9 pr-3 text-sm" placeholder="Rechercher client, téléphone, numéro…" value={search} onChange={e=>setSearch(e.target.value)}/></div><select className="rounded-xl border px-3 py-2 text-sm" value={filter} onChange={e=>setFilter(e.target.value)}><option value="all">Tous les statuts</option>{Object.entries(statusLabels).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></div>
-    {loading?<p className="p-10 text-center text-sm text-slate-500">Chargement…</p>:filtered.length===0?<div className="rounded-2xl border border-slate-200 bg-white p-10 text-center"><ShoppingBag className="mx-auto mb-3 h-8 w-8 text-slate-300"/><p className="font-semibold text-slate-700">Aucune commande trouvée</p><p className="text-sm text-slate-500">Les nouvelles commandes apparaîtront ici.</p></div>:<div className="space-y-3">{filtered.map(order=><article key={order.id} className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5"><div className="flex flex-col sm:flex-row sm:justify-between gap-2"><div><div className="flex flex-wrap items-center gap-2"><strong className="text-[#101828]">{order.orderNumber}</strong><span className="rounded-full bg-blue-50 px-2 py-1 text-xs text-blue-700">{statusLabels[order.status]}</span><span className="rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-600">{order.source==="website"?"Site web":order.source==="whatsapp"?"WhatsApp":"Admin"}</span></div><p className="mt-1 text-sm text-slate-700">{order.customerName} · {order.customerPhone}</p><p className="text-xs text-slate-500">{[order.city,order.address].filter(Boolean).join(" · ")}</p></div><time className="text-xs text-slate-500">{new Date(order.createdAt).toLocaleString("fr-FR")}</time></div>
-      <div className="space-y-1 border-t border-slate-100 pt-3">{order.items.map((item,i)=><div key={i} className="flex justify-between gap-3 text-sm"><span className="text-slate-600">{item.quantity} × {item.productName}</span><strong className="text-[#101828]">{formatFCFA(item.unitPrice*item.quantity)}</strong></div>)}</div>
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-xl bg-slate-50 p-3"><p className="text-xs leading-5 text-slate-600">Articles : {formatFCFA(order.subtotal)}<br/>Livraison : {order.deliveryFee===null?"À définir":formatFCFA(order.deliveryFee)}<br/><strong className="text-[#101828]">Total : {order.total===null?"En attente des frais":formatFCFA(order.total)}</strong><br/>Paiement : {order.paymentStatus==="paid_on_delivery"?"Reçu":"À la livraison"}</p><div className="flex flex-wrap gap-2 items-center">
-        {order.status==="pending_confirmation"&&<><button onClick={()=>setFeeFor(feeFor===order.id?null:order.id)} className="rounded-lg border bg-white px-3 py-2 text-xs font-semibold">Frais livraison</button><button disabled={busy||order.deliveryFee===null} onClick={()=>void changeStatus(order,"confirmed")} className="rounded-lg bg-[#1769FF] px-3 py-2 text-xs font-semibold text-white disabled:opacity-40">Confirmer</button><button disabled={busy} onClick={()=>void changeStatus(order,"cancelled")} className="rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-600">Annuler</button></>}
-        {["confirmed","preparing","out_for_delivery"].includes(order.status)&&<select className="rounded-lg border bg-white p-2 text-xs" value={order.status} onChange={e=>void changeStatus(order,e.target.value as OrderStatus)}><option value="confirmed">Confirmée</option><option value="preparing">En préparation</option><option value="out_for_delivery">En livraison</option><option value="delivered">Livrée</option><option value="cancelled">Annulée</option></select>}
-        {order.status==="delivered"&&order.paymentStatus==="unpaid"&&<button disabled={busy} onClick={()=>void paid(order.id)} className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white">Paiement reçu</button>}
-      </div></div>
-      {feeFor===order.id&&<div className="flex gap-2"><input type="number" min="0" className="min-w-0 flex-1 rounded-lg border p-2 text-sm" placeholder="Frais en FCFA" value={fees[order.id]??""} onChange={e=>setFees({...fees,[order.id]:e.target.value})}/><button disabled={busy||fees[order.id]==null||fees[order.id]===""} onClick={()=>void saveFee(order.id)} className="rounded-lg bg-[#101828] px-3 py-2 text-xs text-white disabled:opacity-50">Enregistrer</button></div>}</article>)}</div>}
+    <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div><p className="text-xs uppercase tracking-widest text-[#1769FF] font-bold">Gestion commerciale</p><h2 className="text-2xl font-bold text-[#101828]">Commandes</h2><p className="text-sm text-slate-500">Toutes les commandes, au même endroit · Paiement à la livraison</p></div>
+      <div className="flex gap-2"><button onClick={() => void load()} className="rounded-xl border border-slate-200 bg-white p-3 text-slate-600" aria-label="Actualiser"><RefreshCw className="w-4 h-4"/></button><button onClick={() => setShowForm(v => !v)} className="rounded-xl bg-[#1769FF] px-4 py-2.5 text-sm font-semibold text-white flex items-center gap-2"><Plus className="w-4 h-4"/> Nouvelle commande</button></div>
+    </header>
+    {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+    {showForm && <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-3">
+      <div className="flex justify-between"><h3 className="font-bold text-[#101828]">Saisie manuelle (WhatsApp / téléphone)</h3><button onClick={() => setShowForm(false)} aria-label="Fermer"><X className="w-4 h-4"/></button></div>
+      <div className="grid sm:grid-cols-2 gap-3">
+        <input className="rounded-xl border p-3 text-sm" placeholder="Nom du client *" value={form.customerName} onChange={e => setForm({ ...form, customerName: e.target.value })}/>
+        <input className="rounded-xl border p-3 text-sm" placeholder="Téléphone *" value={form.customerPhone} onChange={e => setForm({ ...form, customerPhone: e.target.value })}/>
+        <input className="rounded-xl border p-3 text-sm" placeholder="Ville / quartier *" value={form.city} onChange={e => setForm({ ...form, city: e.target.value })}/>
+        <input className="rounded-xl border p-3 text-sm" placeholder="Adresse de livraison" value={form.address} onChange={e => setForm({ ...form, address: e.target.value })}/>
+        <select className="rounded-xl border p-3 text-sm" value={form.source} onChange={e => setForm({ ...form, source: e.target.value as "whatsapp" | "admin" })}><option value="whatsapp">WhatsApp</option><option value="admin">Téléphone / autre</option></select>
+        <div className="sm:col-span-2 space-y-2">
+          <div className="flex items-center justify-between"><span className="text-xs font-semibold text-slate-600">Articles de la commande</span><button type="button" disabled={form.items.length >= 20} onClick={() => setForm({ ...form, items: [...form.items, { productId: "", quantity: 1 }] })} className="text-xs font-semibold text-[#1769FF] disabled:opacity-40">+ Ajouter un article</button></div>
+          {form.items.map((line, index) => {
+            const selected = products.find(p => p.id === line.productId);
+            return <div key={index} className="grid grid-cols-[1fr_100px_auto] gap-2">
+              <select className="min-w-0 rounded-xl border p-3 text-sm" value={line.productId} onChange={e => setForm({ ...form, items: form.items.map((item, i) => i === index ? { ...item, productId: e.target.value } : item) })}>
+                <option value="">Sélectionner un produit *</option>
+                {products.filter(availableForOrder).map(p => <option key={p.id} value={p.id}>{p.name} — {formatFCFA(p.price)} · Stock {p.stockCount}</option>)}
+              </select>
+              <input aria-label="Quantité" type="number" min="1" max={selected?.stockCount ?? 50} className="w-full rounded-xl border p-3 text-sm" value={line.quantity} onChange={e => setForm({ ...form, items: form.items.map((item, i) => i === index ? { ...item, quantity: Number(e.target.value) } : item) })}/>
+              <button type="button" aria-label="Supprimer la ligne" disabled={form.items.length === 1} onClick={() => setForm({ ...form, items: form.items.filter((_, i) => i !== index) })} className="rounded-xl border px-3 text-slate-500 disabled:opacity-30">×</button>
+            </div>;
+          })}
+        </div>
+        <input className="rounded-xl border p-3 text-sm sm:col-span-2" placeholder="Note interne" value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })}/>
+      </div>
+      <p className="text-xs text-slate-500">La commande reste « À confirmer ». Les prix et le stock sont relus côté serveur. Aucun stock n'est retiré avant confirmation. Les frais de livraison seront ajoutés séparément.</p>
+      <button disabled={busy} onClick={() => void create()} className="rounded-xl bg-[#101828] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{busy ? "Enregistrement…" : "Enregistrer la commande"}</button>
+    </div>}
+    <div className="flex flex-col sm:flex-row gap-3 rounded-2xl border border-slate-200 bg-white p-3">
+      <div className="relative flex-1"><Search className="absolute left-3 top-3 w-4 h-4 text-slate-400"/><input className="w-full rounded-xl border py-2.5 pl-9 pr-3 text-sm" placeholder="Rechercher client, téléphone, numéro…" value={search} onChange={e => setSearch(e.target.value)}/></div>
+      <select className="rounded-xl border px-3 py-2 text-sm" value={filter} onChange={e => setFilter(e.target.value)}><option value="all">Tous les statuts</option>{Object.entries(statusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
+    </div>
+    {loading ? <p className="p-10 text-center text-sm text-slate-500">Chargement…</p> : filtered.length === 0 ? <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center"><ShoppingBag className="mx-auto mb-3 h-8 w-8 text-slate-300"/><p className="font-semibold text-slate-700">Aucune commande trouvée</p><p className="text-sm text-slate-500">Les nouvelles commandes apparaîtront ici.</p></div> : <div className="space-y-3">
+      {filtered.map(order => <article key={order.id} className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
+        <div className="flex flex-col sm:flex-row sm:justify-between gap-2"><div><div className="flex flex-wrap items-center gap-2"><strong className="text-[#101828]">{order.orderNumber}</strong><span className="rounded-full bg-blue-50 px-2 py-1 text-xs text-blue-700">{statusLabels[order.status]}</span><span className="rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-600">{order.source === "website" ? "Site web" : order.source === "whatsapp" ? "WhatsApp" : "Admin"}</span></div><p className="mt-1 text-sm text-slate-700">{order.customerName} · {order.customerPhone}</p><p className="text-xs text-slate-500">{[order.city, order.address].filter(Boolean).join(" · ")}</p></div><time className="text-xs text-slate-500">{new Date(order.createdAt).toLocaleString("fr-FR")}</time></div>
+        <div className="space-y-1 border-t border-slate-100 pt-3">{order.items.map((item, i) => <div key={i} className="flex justify-between gap-3 text-sm"><span className="text-slate-600">{item.quantity} × {item.productName}</span><strong className="text-[#101828]">{formatFCFA(item.unitPrice * item.quantity)}</strong></div>)}</div>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-xl bg-slate-50 p-3"><p className="text-xs leading-5 text-slate-600">Articles : {formatFCFA(order.subtotal)}<br/>Livraison : {order.deliveryFee === null ? "À définir" : formatFCFA(order.deliveryFee)}<br/><strong className="text-[#101828]">Total : {order.total === null ? "En attente des frais" : formatFCFA(order.total)}</strong><br/>Paiement : {order.paymentStatus === "paid_on_delivery" ? "Reçu à la livraison" : "À la livraison"}</p>
+          <div className="flex flex-wrap gap-2 items-center">
+            {order.status === "pending_confirmation" && <><button onClick={() => setFeeFor(feeFor === order.id ? null : order.id)} className="rounded-lg border bg-white px-3 py-2 text-xs font-semibold">Frais livraison</button><button disabled={busy || order.deliveryFee === null} onClick={() => void changeStatus(order, "confirmed")} className="rounded-lg bg-[#1769FF] px-3 py-2 text-xs font-semibold text-white disabled:opacity-40">Confirmer</button><button disabled={busy} onClick={() => void changeStatus(order, "cancelled")} className="rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-600">Annuler</button></>}
+            {["confirmed", "preparing", "out_for_delivery"].includes(order.status) && <select aria-label={`Changer le statut de ${order.orderNumber}`} disabled={busy} className="rounded-lg border bg-white p-2 text-xs" value={order.status} onChange={e => void changeStatus(order, e.target.value as OrderStatus)}>{[order.status, ...nextStatuses[order.status]].map(status => <option key={status} value={status}>{statusLabels[status]}</option>)}</select>}
+            {order.status === "delivered" && order.paymentStatus === "unpaid" && <button disabled={busy} onClick={() => void paid(order.id)} className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white">Paiement reçu</button>}
+            {order.status === "delivered" && order.paymentStatus === "paid_on_delivery" && <span className="rounded-lg bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">Paiement enregistré</span>}
+          </div>
+        </div>
+        {feeFor === order.id && <div className="flex gap-2"><input type="number" min="0" step="1" className="min-w-0 flex-1 rounded-lg border p-2 text-sm" placeholder="Frais en FCFA" value={fees[order.id] ?? ""} onChange={e => setFees({ ...fees, [order.id]: e.target.value })}/><button disabled={busy || fees[order.id] == null || fees[order.id] === ""} onClick={() => void saveFee(order.id)} className="rounded-lg bg-[#101828] px-3 py-2 text-xs text-white disabled:opacity-50">Enregistrer</button></div>}
+      </article>)}
+    </div>}
   </section>;
 };
