@@ -103,9 +103,11 @@ export const OrdersPanel: React.FC<{ products: Product[]; onRefreshProducts: () 
       setError("Saisissez les frais de livraison en FCFA sous forme de montant entier positif ou nul.");
       return;
     }
+    const order = orders.find((entry) => entry.id === id);
+    if (!order) { setError("Commande introuvable dans la liste. Actualisez avant de réessayer."); return; }
     setBusy(true);
     setError("");
-    try { await orderService.setDeliveryFee(id, Number(raw)); setFeeFor(null); await load(); }
+    try { await orderService.setDeliveryFee(id, Number(raw), order.updatedAt); setFeeFor(null); await load(); }
     catch (e) { setError(e instanceof Error ? e.message : "Enregistrement impossible."); }
     finally { setBusy(false); }
   };
