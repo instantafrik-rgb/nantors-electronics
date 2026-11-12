@@ -49,7 +49,7 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="hidden md:inline text-slate-300">/</span>
             
           </div>
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <a
               href={waInquiryUrl}
               target={waInquiryUrl.startsWith('#') ? undefined : '_blank'}
@@ -64,7 +64,7 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* 2. Navigation Principale: Sticky on all devices */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 sm:h-20 flex items-center justify-between gap-3 sm:gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 sm:h-20 flex items-center justify-between gap-2 sm:gap-8">
           {/* Zone 1: Brand Wordmark (Editorial luxury tech) */}
           <button
             type="button"
@@ -152,7 +152,9 @@ export const Header: React.FC<HeaderProps> = ({
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg md:hidden cursor-pointer"
-              aria-label="Ouvrir le menu"
+              aria-label={mobileMenuOpen ? "Fermer le menu" : "Ouvrir le menu"}
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-navigation"
             >
               {mobileMenuOpen ? <X className="w-6 h-6 text-slate-900" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -161,7 +163,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Mobile Drawer Menu with highlighted active item in #FF6B00 */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-slate-200 bg-white px-4 pt-3 pb-6 space-y-3 shadow-2xl animate-in slide-in-from-top-2 duration-150">
+          <div id="mobile-navigation" className="md:hidden border-t border-slate-200 bg-white px-4 pt-3 pb-6 space-y-3 shadow-2xl animate-in slide-in-from-top-2 duration-150">
             <div className="flex flex-col space-y-1">
               {navLinks.map((link) => {
                 const isActive = activePage === link.id;
