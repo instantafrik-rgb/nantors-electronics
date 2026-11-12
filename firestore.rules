@@ -102,13 +102,14 @@ service cloud.firestore {
       allow get: if resource.data.isAvailable == true || isSuperAdmin();
       allow list: if resource.data.isAvailable == true || isSuperAdmin();
 
-      // Mutations réservées exclusivement à instantafrik@gmail.com
-      allow create: if isSuperAdmin() && isValidProduct(request.resource.data);
-      // Les ajustements de stock passent par les Cloud Functions transactionnelles.
+      // La création initialise le stock et son mouvement dans une Cloud Function transactionnelle.
+      allow create: if false;
+      // Les modifications de fiche sont réservées au propriétaire; le stock reste géré côté serveur.
       allow update: if isSuperAdmin() &&
         isValidProduct(request.resource.data) &&
         request.resource.data.stockCount == resource.data.stockCount;
-      allow delete: if isSuperAdmin();
+      // La suppression passe par une Cloud Function qui vérifie les commandes et mouvements historiques.
+      allow delete: if false;
     }
 
     // -------------------------------------------------------------
@@ -159,16 +160,17 @@ service cloud.firestore {
 
     // -------------------------------------------------------------
     // 8. COMMANDES ET MOUVEMENTS DE STOCK
-    // Les écritures publiques seront ajoutées via une Cloud Function
-    // validant prix, quantités et disponibilité côté serveur.
+    // Toutes les écritures passent par les Cloud Functions transactionnelles.
+    // Le navigateur propriétaire dispose uniquement de la lecture.
     // -------------------------------------------------------------
     match /orders/{orderId} {
-      allow read, create, update, delete: if isSuperAdmin();
+      allow read: if isSuperAdmin();
+      allow create, update, delete: if false;
     }
 
     match /inventory_movements/{movementId} {
-      allow read, create: if isSuperAdmin();
-      allow update, delete: if false;
+      allow read: if isSuperAdmin();
+      allow create, update, delete: if false;
     }
 
     // -------------------------------------------------------------
