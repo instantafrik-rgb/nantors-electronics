@@ -66,14 +66,14 @@ export const ContactPage: React.FC = () => {
   const faqItems = [
     {
       q: "Comment s'effectue la commande sur WhatsApp ?",
-      a: 'Cliquez simplement sur le bouton "Commander sur WhatsApp" présent sur la fiche du produit souhaité. Un message prérempli avec la référence et le prix s\'ouvre directement dans votre application WhatsApp. Vous précisez simplement votre quartier à Lomé ou votre ville au Togo pour convenir du créneau de livraison.',
+      a: 'Cliquez simplement sur le bouton "Commander sur WhatsApp" présent sur la fiche du produit souhaité. Un message prérempli avec la référence et le prix s\'ouvre directement dans votre application WhatsApp. Vous précisez votre quartier à Lomé afin que notre équipe vous confirme les modalités de livraison.',
     },
     {
       q: "Comment fonctionne le Paiement à la Livraison ?",
-      a: "Nous n'exigeons aucun paiement préalable. Le règlement s'effectue en espèces auprès de notre livreur à Lomé ou lors du retrait en région une fois le colis réceptionné et vérifié par vos soins.",
+      a: "Le règlement s'effectue en espèces à la livraison à Lomé. Les modalités sont confirmées avec notre équipe avant validation de la commande.",
     },
     {
-      q: "Quels sont les délais de livraison au Togo ?",
+      q: "Quels sont les délais de livraison à Lomé ?",
       a: "Les délais dépendent de votre quartier ou de votre ville et de la disponibilité du produit. Notre équipe vous confirme les modalités et le créneau avant validation.",
     },
     {
@@ -85,7 +85,7 @@ export const ContactPage: React.FC = () => {
   const waInquiryUrl = generateWhatsAppInquiryUrl();
 
   return (
-    <div className="py-12 md:py-20 bg-[#afbdc5] text-slate-900">
+    <div className="nantor-contact-page py-12 md:py-20 bg-[#afbdc5] text-slate-900">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
         {/* Intro */}
         <div className="text-center max-w-2xl mx-auto space-y-3">
