@@ -8,6 +8,7 @@ import { X, Plus, Trash2, Eye, Check, Image as ImageIcon } from "lucide-react";
 import { CategoryInfo, Product } from "../../types";
 import { CloudinaryUploader } from "./CloudinaryUploader";
 import { formatFCFA } from "../../utils/formatters";
+import { config } from "../../config/environment";
 
 interface ProductFormModalProps {
   isOpen: boolean;
