@@ -7,6 +7,9 @@ import {
   calculateSubtotal, calculateOrderTotalWithDeliveryFee, computeStockAdjustments, isSameIdempotentOrder, normalizeRequestedItems,
   normalizeStoredOrderItems, validateCustomerFields, validateRequestId, type OrderStatus,
 } from "./orderLogic.js";
+import {
+  buildInitialStockMovement, ProductValidationError, validateCatalogProduct, type CatalogProductInput,
+} from "./productLogic.js";
 
 initializeApp();
 const db = getFirestore();
@@ -66,6 +69,14 @@ async function createOrderWithIdempotency(input: {
       const orderItems = buildOrderItems(input.requestedItems, productRecords);
       const subtotal = calculateSubtotal(orderItems);
       const orderNumber = "NE-" + orderRef.id.slice(-8).toUpperCase();
+      for (const item of orderItems) {
+        transaction.set(db.collection("product_order_history").doc(item.productId), {
+          productId: item.productId,
+          firstOrderId: orderRef.id,
+          firstOrderNumber: orderNumber,
+          createdAt: now,
+        }, { merge: true });
+      }
       transaction.set(orderRef, {
         orderNumber, idempotencyKey: input.requestId, source: input.source,
         customerName: input.customer.customerName, customerPhone: input.customer.customerPhone,
@@ -80,6 +91,65 @@ async function createOrderWithIdempotency(input: {
     rethrowDomainError(error);
   }
 }
+
+export const createCatalogProduct = onCall({ region: "europe-west1", maxInstances: 5 }, async (request) => {
+  requireOwner(request.auth);
+  let product: CatalogProductInput;
+  try {
+    product = validateCatalogProduct(request.data);
+  } catch (error) {
+    if (error instanceof ProductValidationError) throw new HttpsError("invalid-argument", error.message);
+    throw error;
+  }
+
+  const productRef = db.collection("products").doc(product.id);
+  const now = new Date().toISOString();
+  return db.runTransaction(async (transaction) => {
+    const existing = await transaction.get(productRef);
+    if (existing.exists) throw new HttpsError("already-exists", "Cette référence produit existe déjà.");
+    const record = { ...product, createdAt: now, updatedAt: now };
+    transaction.create(productRef, record);
+
+    const initialMovement = buildInitialStockMovement(product, now);
+    if (initialMovement) {
+      transaction.create(db.collection("inventory_movements").doc(), initialMovement);
+    }
+    return record;
+  });
+});
+
+export const deleteCatalogProduct = onCall({ region: "europe-west1", maxInstances: 5 }, async (request) => {
+  requireOwner(request.auth);
+  const productId = typeof request.data?.productId === "string" ? request.data.productId.trim() : "";
+  if (!productId || productId.length > 150 || productId.includes("/")) {
+    throw new HttpsError("invalid-argument", "La référence produit est invalide.");
+  }
+
+  const productRef = db.collection("products").doc(productId);
+  const historyRef = db.collection("product_order_history").doc(productId);
+  const movementQuery = db.collection("inventory_movements").where("productId", "==", productId).limit(1);
+  const ordersQuery = db.collection("orders");
+
+  return db.runTransaction(async (transaction) => {
+    const productSnapshot = await transaction.get(productRef);
+    if (!productSnapshot.exists) throw new HttpsError("not-found", "Produit introuvable.");
+    const historySnapshot = await transaction.get(historyRef);
+    const movementSnapshot = await transaction.get(movementQuery);
+    const ordersSnapshot = await transaction.get(ordersQuery);
+    const hasLegacyOrderHistory = ordersSnapshot.docs.some((orderSnapshot) => {
+      const items = orderSnapshot.data().items;
+      return Array.isArray(items) && items.some((item: unknown) =>
+        Boolean(item) && typeof item === "object" && (item as Record<string, unknown>).productId === productId
+      );
+    });
+
+    if (historySnapshot.exists || !movementSnapshot.empty || hasLegacyOrderHistory) {
+      throw new HttpsError("failed-precondition", "Ce produit possède un historique de commandes ou de stock. Masquez-le au lieu de le supprimer afin de préserver les archives.");
+    }
+    transaction.delete(productRef);
+    return { productId, deleted: true };
+  });
+});
 
 export const createWebsiteOrder = onCall({ region: "europe-west1", enforceAppCheck: false, maxInstances: 10 }, async (request) => {
   try {
