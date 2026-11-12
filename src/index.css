@@ -204,3 +204,120 @@ html[data-theme="dark"] .border-slate-200,
 html[data-theme="dark"] .border-slate-100 { border-color: #334155 !important; }
 html[data-theme="dark"] [class~="bg-[#afbdc5]"] { background: #0f172a !important; }
 html[data-theme="dark"] footer { background: #0b1220 !important; border-color: #334155 !important; }
+
+
+/* === Storefront navigation and catalogue refinement === */
+.nantor-header { background:rgba(255,255,255,.94); backdrop-filter:blur(18px); border-bottom:1px solid rgba(25,35,42,.07); box-shadow:0 8px 28px rgba(45,60,68,.035); }
+.nantor-header-top { background:#f4f6f6; border-bottom:1px solid #e9edef; }
+.nantor-header-top-inner { max-width:1600px; margin:auto; padding:8px clamp(16px,4vw,58px); display:flex; align-items:center; justify-content:space-between; gap:16px; color:#65727a; font-size:10px; font-weight:600; letter-spacing:.025em; }
+.nantor-header-top-inner > span:first-child { display:flex; align-items:center; gap:8px; }
+.nantor-header-top-inner svg { color:#1769ff; }
+.nantor-header-top-right { display:flex; align-items:center; gap:9px; white-space:nowrap; }
+.nantor-header-top-right i { width:4px; height:4px; border-radius:50%; background:#aab4b9; }
+.nantor-header-main { max-width:1600px; height:82px; margin:auto; padding:0 clamp(16px,4vw,58px); display:flex; align-items:center; justify-content:space-between; gap:26px; }
+.nantor-brand { display:flex; align-items:center; gap:11px; text-align:left; flex-shrink:0; }
+.nantor-brand-mark { width:43px; height:43px; display:grid; place-items:center; border-radius:15px; background:#101113; color:white; overflow:hidden; }
+.nantor-brand-mark > span { font-family:'Outfit',sans-serif; font-size:25px; font-weight:800; letter-spacing:-.09em; }
+.nantor-brand-mark > span span { color:#8eb5ff; }
+.nantor-brand-mark img { width:100%; height:100%; object-fit:contain; padding:5px; }
+.nantor-brand-copy { display:flex; flex-direction:column; gap:2px; }
+.nantor-brand-copy strong { color:#171b1e; font-family:'Outfit',sans-serif; font-size:16px; font-weight:750; letter-spacing:-.035em; white-space:nowrap; }
+.nantor-brand-copy small { color:#89949a; font-size:8px; letter-spacing:.19em; font-weight:750; }
+.nantor-desktop-nav { display:flex; align-items:center; justify-content:center; gap:clamp(16px,2.5vw,38px); }
+.nantor-desktop-nav button { position:relative; padding:10px 0; color:#69757c; font-size:12px; font-weight:650; transition:color .2s; }
+.nantor-desktop-nav button:hover,.nantor-desktop-nav button.active { color:#1769ff; }
+.nantor-desktop-nav button.active:after { content:""; position:absolute; left:0; right:0; bottom:2px; height:2px; border-radius:4px; background:#1769ff; }
+.nantor-header-actions { display:flex; align-items:center; gap:11px; }
+.nantor-admin-link { display:inline-flex; align-items:center; gap:7px; padding:10px 12px; border:1px solid #e8edef; border-radius:13px; color:#67737a; font-size:10px; font-weight:700; transition:all .2s; }
+.nantor-admin-link:hover { border-color:#c8d8f7; color:#1769ff; background:#f7faff; }
+.nantor-header-cta { display:inline-flex; align-items:center; justify-content:center; gap:9px; padding:12px 16px; border-radius:14px; background:#1769ff; color:white; font-size:11px; font-weight:750; box-shadow:0 7px 18px rgba(23,105,255,.18); transition:transform .2s,box-shadow .2s; white-space:nowrap; }
+.nantor-header-cta:hover { transform:translateY(-2px); box-shadow:0 10px 22px rgba(23,105,255,.24); }
+.nantor-mobile-toggle { display:none; color:#20272b; padding:9px; border-radius:12px; background:#f3f5f6; }
+.nantor-mobile-menu { display:none; }
+.nantor-catalog-page { min-height:100vh; background:#afbdc5; padding:30px clamp(14px,3.2vw,54px) 60px; }
+.nantor-catalog-shell { width:min(1600px,100%); margin:auto; display:flex; flex-direction:column; gap:22px; }
+.nantor-catalog-intro { min-height:300px; position:relative; overflow:hidden; isolation:isolate; display:flex; align-items:center; background:#fff; border-radius:30px; padding:clamp(28px,5vw,66px); box-shadow:0 18px 50px rgba(48,64,73,.06); }
+.nantor-catalog-intro-copy { position:relative; z-index:2; max-width:590px; }
+.nantor-catalog-intro h1 { margin-top:16px; color:#161a1d; font-size:clamp(36px,5vw,62px); line-height:.99; font-weight:650; letter-spacing:-.065em; }
+.nantor-catalog-intro h1 span { color:#1769ff; }
+.nantor-catalog-intro p { max-width:520px; margin-top:17px; color:#7b878e; font-size:13px; line-height:1.75; }
+.nantor-catalog-points { display:flex; flex-wrap:wrap; gap:9px 17px; margin-top:23px; color:#647179; font-size:10px; font-weight:700; }
+.nantor-catalog-points span { white-space:nowrap; }
+.nantor-catalog-art { position:absolute; z-index:1; top:0; right:0; bottom:0; width:43%; overflow:hidden; background:linear-gradient(135deg,#eef2f3,#dce5e9); }
+.nantor-art-disc { position:absolute; border-radius:50%; border:1px solid rgba(23,105,255,.16); }
+.nantor-art-disc-one { width:330px; height:330px; right:10%; top:50%; transform:translateY(-50%); box-shadow:0 0 0 30px rgba(255,255,255,.24),0 0 0 70px rgba(255,255,255,.18); }
+.nantor-art-disc-two { width:190px; height:190px; right:26%; top:50%; transform:translateY(-50%); background:linear-gradient(145deg,#1769ff,#101d39); box-shadow:inset -18px -18px 35px rgba(0,0,0,.2),0 25px 50px rgba(23,48,77,.2); }
+.nantor-art-label { position:absolute; top:30px; right:32px; color:#7d8a91; font-size:9px; font-weight:800; letter-spacing:.18em; }
+.nantor-art-caption { position:absolute; bottom:28px; right:32px; color:#7c8a91; font-family:'Outfit',sans-serif; font-size:16px; line-height:1.1; text-align:right; letter-spacing:-.04em; }
+.nantor-catalog-controls { background:#fff; border-radius:27px; padding:clamp(20px,3vw,34px); box-shadow:0 14px 38px rgba(48,64,73,.05); }
+.nantor-catalog-section-head { display:flex; align-items:end; justify-content:space-between; gap:16px; margin-bottom:23px; }
+.nantor-catalog-section-head h2 { margin-top:5px; color:#171b1e; font-family:'Outfit',sans-serif; font-size:27px; font-weight:650; letter-spacing:-.045em; }
+.nantor-catalog-count { padding:7px 11px; border-radius:30px; background:#f1f4f5; color:#6f7b82; font-size:10px; font-weight:750; }
+.nantor-catalog-products { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:17px; }
+.nantor-catalog-empty { background:white; border-radius:28px; padding:55px 20px; text-align:center; box-shadow:0 14px 38px rgba(48,64,73,.05); }
+.nantor-empty-icon { width:58px; height:58px; display:grid; place-items:center; margin:0 auto 15px; border-radius:19px; background:#eef4ff; color:#1769ff; }
+.nantor-catalog-empty h3 { color:#20272b; font-family:'Outfit',sans-serif; font-size:20px; font-weight:650; }
+.nantor-catalog-empty p { max-width:440px; margin:8px auto 20px; color:#879198; font-size:12px; line-height:1.7; }
+.nantor-catalog-empty > div:last-child { display:flex; justify-content:center; flex-wrap:wrap; gap:9px; }
+.nantor-catalog-empty button,.nantor-catalog-empty a { display:inline-flex; align-items:center; gap:8px; padding:11px 15px; border-radius:13px; background:#1769ff; color:#fff; font-size:11px; font-weight:750; }
+.nantor-catalog-empty a { background:#f0f3f4; color:#344047; }
+.nantor-catalog-products .group { border:0; border-radius:22px; background:#fff; box-shadow:0 10px 28px rgba(43,57,65,.055); }
+.nantor-catalog-products .group:hover { box-shadow:0 18px 36px rgba(43,57,65,.11); transform:translateY(-3px); }
+.nantor-catalog-products .group > div:first-child { margin:9px; width:calc(100% - 18px); border-radius:17px; aspect-ratio:1/1; background:#f3f5f5; }
+.nantor-catalog-products .group > div:first-child img { object-fit:contain; mix-blend-mode:multiply; padding:9px; }
+.nantor-catalog-products .group > div:nth-child(2) { padding:5px 17px 17px; }
+.nantor-catalog-products .group > div:nth-child(2) > div:last-child { border-color:#edf0f1; }
+.nantor-catalog-products .group button { border-radius:11px; }
+.nantor-catalog-products .group button:not(:disabled) { background:#1769ff; }
+.nantor-catalog-products .group button:not(:disabled):hover { background:#0d55dc; }
+.nantor-catalog-products .group h3 { font-size:14px; }
+.nantor-catalog-products .group .font-mono { color:#1769ff; font-family:'Outfit',sans-serif; font-weight:750; }
+.nantor-catalog-products .group .text-\\[\\#aaaaaa\\] { color:#89949a; }
+@media(max-width:1100px) {
+ .nantor-catalog-products { grid-template-columns:repeat(3,minmax(0,1fr)); }
+ .nantor-header-main { gap:15px; }
+ .nantor-desktop-nav { gap:17px; }
+}
+@media(max-width:800px) {
+ .nantor-header-top-inner { justify-content:center; }
+ .nantor-header-top-right { display:none; }
+ .nantor-header-main { height:70px; }
+ .nantor-desktop-nav,.nantor-admin-link { display:none; }
+ .nantor-header-cta { padding:10px 12px; }
+ .nantor-header-cta span { display:none; }
+ .nantor-mobile-toggle { display:grid; place-items:center; }
+ .nantor-mobile-menu { display:flex; flex-direction:column; gap:5px; padding:12px 18px 18px; background:white; border-top:1px solid #edf0f1; box-shadow:0 18px 30px rgba(30,45,52,.08); }
+ .nantor-mobile-menu button,.nantor-mobile-menu a { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:13px 12px; border-radius:12px; color:#58656c; font-size:13px; font-weight:650; text-align:left; }
+ .nantor-mobile-menu button.active { background:#f0f5ff; color:#1769ff; }
+ .nantor-mobile-menu a { justify-content:center; margin-top:7px; background:#1769ff; color:white; }
+ .nantor-catalog-page { padding:16px 14px 38px; }
+ .nantor-catalog-intro { min-height:280px; padding:27px; border-radius:23px; }
+ .nantor-catalog-intro-copy { max-width:65%; }
+ .nantor-catalog-intro h1 { font-size:clamp(32px,6vw,48px); }
+ .nantor-catalog-art { width:37%; opacity:.9; }
+ .nantor-art-disc-one { width:220px; height:220px; right:-25%; }
+ .nantor-art-disc-two { width:130px; height:130px; right:5%; }
+ .nantor-catalog-products { grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+}
+@media(max-width:560px) {
+ .nantor-brand-mark { width:38px; height:38px; border-radius:13px; }
+ .nantor-brand-copy strong { font-size:14px; }
+ .nantor-brand-copy small { font-size:7px; }
+ .nantor-header-actions { gap:6px; }
+ .nantor-header-cta { width:38px; height:38px; padding:0; border-radius:12px; }
+ .nantor-catalog-intro { min-height:310px; align-items:flex-start; padding:24px 20px; }
+ .nantor-catalog-intro-copy { max-width:100%; }
+ .nantor-catalog-intro h1 { font-size:38px; }
+ .nantor-catalog-intro p { max-width:90%; font-size:11px; }
+ .nantor-catalog-art { width:100%; top:auto; height:95px; opacity:.75; }
+ .nantor-art-disc-one { width:170px; height:170px; right:16%; top:50%; }
+ .nantor-art-disc-two { width:82px; height:82px; right:30%; top:50%; }
+ .nantor-art-label { top:13px; right:15px; font-size:7px; }
+ .nantor-art-caption { bottom:10px; right:15px; font-size:10px; }
+ .nantor-catalog-points { gap:7px 10px; font-size:8px; }
+ .nantor-catalog-controls { padding:18px; border-radius:21px; }
+ .nantor-catalog-section-head h2 { font-size:22px; }
+ .nantor-catalog-products .group > div:nth-child(2) { padding:4px 11px 12px; }
+ .nantor-catalog-products .group h3 { font-size:11px; }
+ .nantor-catalog-products .group button { font-size:9px; padding:7px 8px; }
+}
