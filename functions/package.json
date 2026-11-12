@@ -2,11 +2,10 @@
   "name": "nantors-electronics-functions",
   "private": true,
   "main": "lib/index.js",
-  "engines": {
-    "node": "22"
-  },
+  "engines": { "node": "22" },
   "scripts": {
     "build": "tsc",
+    "test": "node --test lib/orderLogic.test.js",
     "serve": "npm run build && firebase emulators:start --only functions",
     "deploy": "firebase deploy --only functions"
   },

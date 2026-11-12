@@ -104,7 +104,10 @@ service cloud.firestore {
 
       // Mutations réservées exclusivement à instantafrik@gmail.com
       allow create: if isSuperAdmin() && isValidProduct(request.resource.data);
-      allow update: if isSuperAdmin() && isValidProduct(request.resource.data);
+      // Les ajustements de stock passent par les Cloud Functions transactionnelles.
+      allow update: if isSuperAdmin() &&
+        isValidProduct(request.resource.data) &&
+        request.resource.data.stockCount == resource.data.stockCount;
       allow delete: if isSuperAdmin();
     }
 

@@ -26,15 +26,21 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - name: Install dependencies
+      - name: Install web dependencies
         run: npm ci
       - name: TypeScript validation
         run: npm run lint
       - name: Production build
         run: npm run build
+      - name: Generate Cloud Functions lockfile
+        working-directory: functions
+        run: npm install --package-lock-only --ignore-scripts
       - name: Install Cloud Functions dependencies
         working-directory: functions
-        run: npm install
+        run: npm ci
       - name: Build Cloud Functions
         working-directory: functions
         run: npm run build
+      - name: Test order and stock rules
+        working-directory: functions
+        run: npm test
