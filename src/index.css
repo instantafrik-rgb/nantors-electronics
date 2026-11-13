@@ -1,10 +1,10 @@
 @import "tailwindcss";
 
 @layer base {
-  html { scroll-behavior: smooth; background: #afbdc5; }
+  html { scroll-behavior: smooth; background: #f3f6f8; }
   body {
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    background: #afbdc5;
+    background: #f3f6f8;
     color: #17191c;
   }
   h1,h2,h3,h4,h5,h6,.font-display {
@@ -20,13 +20,13 @@
 .scrollbar-none::-webkit-scrollbar { display:none; }
 .scrollbar-none { -ms-overflow-style:none; scrollbar-width:none; }
 
-body, #root { background: #afbdc5; }
+body, #root { background: #f3f6f8; }
 button, a { -webkit-tap-highlight-color: transparent; }
 button { cursor: pointer; }
 ::selection { background: #1769ff; color: white; }
 
 .nantor-home {
-  background: #afbdc5;
+  background: #f3f6f8;
   padding: 28px clamp(14px, 3.2vw, 54px) 54px;
 }
 .nantor-home-shell {
@@ -202,7 +202,7 @@ html[data-theme="dark"] .bg-slate-50,
 html[data-theme="dark"] .bg-slate-100 { background: #1e293b !important; }
 html[data-theme="dark"] .border-slate-200,
 html[data-theme="dark"] .border-slate-100 { border-color: #334155 !important; }
-html[data-theme="dark"] [class~="bg-[#afbdc5]"] { background: #0f172a !important; }
+html[data-theme="dark"] [class~="bg-[#f3f6f8]"] { background: #0f172a !important; }
 html[data-theme="dark"] footer { background: #0b1220 !important; border-color: #334155 !important; }
 
 
@@ -234,7 +234,7 @@ html[data-theme="dark"] footer { background: #0b1220 !important; border-color: #
 .nantor-header-cta:hover { transform:translateY(-2px); box-shadow:0 10px 22px rgba(23,105,255,.24); }
 .nantor-mobile-toggle { display:none; color:#20272b; padding:9px; border-radius:12px; background:#f3f5f6; }
 .nantor-mobile-menu { display:none; }
-.nantor-catalog-page { min-height:100vh; background:#afbdc5; padding:30px clamp(14px,3.2vw,54px) 60px; }
+.nantor-catalog-page { min-height:100vh; background:#f3f6f8; padding:30px clamp(14px,3.2vw,54px) 60px; }
 .nantor-catalog-shell { width:min(1600px,100%); margin:auto; display:flex; flex-direction:column; gap:22px; }
 .nantor-catalog-intro { min-height:300px; position:relative; overflow:hidden; isolation:isolate; display:flex; align-items:center; background:#fff; border-radius:30px; padding:clamp(28px,5vw,66px); box-shadow:0 18px 50px rgba(48,64,73,.06); }
 .nantor-catalog-intro-copy { position:relative; z-index:2; max-width:590px; }
@@ -324,7 +324,7 @@ html[data-theme="dark"] footer { background: #0b1220 !important; border-color: #
 
 
 /* About, contact and footer pages */
-.nantor-info-page { background:#afbdc5; padding:30px clamp(14px,3.2vw,54px) 60px; }
+.nantor-info-page { background:#f3f6f8; padding:30px clamp(14px,3.2vw,54px) 60px; }
 .nantor-info-shell { width:min(1420px,100%); margin:auto; display:flex; flex-direction:column; gap:22px; }
 .nantor-info-hero { min-height:350px; position:relative; isolation:isolate; overflow:hidden; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; padding:clamp(30px,5vw,68px); border-radius:30px; background:#fff; box-shadow:0 18px 50px rgba(48,64,73,.06); }
 .nantor-info-hero h1 { position:relative; z-index:2; margin-top:17px; color:#171b1e; font-size:clamp(38px,5vw,64px); font-weight:650; line-height:.98; letter-spacing:-.065em; }
@@ -393,7 +393,7 @@ html[data-theme="dark"] footer { background: #0b1220 !important; border-color: #
 
 
 /* === Homepage v2: bright editorial hero with a real catalogue product === */
-.nantor-home { background:#eaf0f2; padding:clamp(16px,2.8vw,38px) clamp(14px,3.2vw,54px) 58px; }
+.nantor-home { background:#f3f6f8; padding:clamp(16px,2.8vw,38px) clamp(14px,3.2vw,54px) 58px; }
 .nantor-home-shell { width:min(1600px,100%); display:flex; flex-direction:column; gap:22px; }
 .nantor-home-hero { min-height:clamp(390px,39vw,550px); position:relative; display:grid; grid-template-columns:1.02fr .98fr; overflow:hidden; isolation:isolate; border-radius:32px; background:linear-gradient(115deg,#fff 0%,#fff 52%,#f2f6f8 100%); box-shadow:0 18px 50px rgba(48,64,73,.07); }
 .nantor-home-hero-copy { position:relative; z-index:2; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; padding:clamp(30px,5vw,76px); }
