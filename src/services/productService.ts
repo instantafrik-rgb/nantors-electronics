@@ -13,6 +13,19 @@ const LOCAL_STORAGE_PRODUCTS_KEY = "nantors_electronics_products_v1";
 const LOCAL_STORAGE_CATEGORIES_KEY = "nantors_electronics_categories_v1";
 const LOCAL_STORAGE_DATA_SOURCE_KEY = "nantors_electronics_datasource_v2";
 
+function firestoreReadError(resource: string, error: unknown): string {
+  const code = error && typeof error === "object" && "code" in error
+    ? String((error as { code?: unknown }).code ?? "")
+    : "";
+  if (code === "permission-denied") {
+    return `Firestore refuse la lecture de ${resource}. Déployez firestore.rules sur le projet Firebase utilisé par Vercel, puis vérifiez les règles publiques de lecture du catalogue.`;
+  }
+  if (code === "unavailable" || code === "deadline-exceeded") {
+    return `Firestore est temporairement indisponible pour ${resource}. Réessayez dans quelques instants.`;
+  }
+  return `Impossible de charger ${resource} depuis Firestore. Vérifiez la configuration Firebase et les règles de sécurité.`;
+}
+
 function sanitizeForFirestore<T extends Record<string, any>>(
   obj: T,
 ): Record<string, any> {
@@ -100,7 +113,7 @@ class ProductService {
           );
         } catch (err) {
           console.error("Erreur lecture catégories Firestore:", err);
-          throw new Error("Impossible de charger les catégories depuis Firestore. Vérifiez la configuration et les règles Firebase.");
+          throw new Error(firestoreReadError("les catégories", err));
         }
       }
       throw new Error("Firebase est sélectionné mais Firestore n'est pas disponible.");
@@ -142,7 +155,7 @@ class ProductService {
           }
         } catch (err) {
           console.error("Erreur lecture produits Firestore:", err);
-          throw new Error("Impossible de charger les produits depuis Firestore. Les données locales de démonstration ne seront pas affichées.");
+          throw new Error(firestoreReadError("les produits", err));
 
         }
       } else {
