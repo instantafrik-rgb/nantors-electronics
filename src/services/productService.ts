@@ -278,24 +278,24 @@ class ProductService {
     }
 
     if (this.dataSource === "firebase") {
-      const db = await getDb();
-      if (db) {
-        try {
-          const { doc, updateDoc, getDoc, deleteField } = await import("firebase/firestore");
-          const sanitized = sanitizeForFirestore(payloadWithTime);
-          if (Object.prototype.hasOwnProperty.call(updates, "lowStockThreshold") && updates.lowStockThreshold === undefined) {
-            sanitized.lowStockThreshold = deleteField();
-          }
-          const docRef = doc(db, "products", id);
-          await updateDoc(docRef, sanitized);
-          const updatedSnap = await getDoc(docRef);
-          return { id, ...updatedSnap.data() } as Product;
-        } catch (err) {
-          console.error("Erreur modification produit Firestore:", err);
-          throw new Error("La modification n'a pas été enregistrée dans Firestore. Aucune copie locale de secours n'a été créée.");
-        }
+      const clearableFields = ["categoryLabel", "originalPrice", "description", "lowStockThreshold", "sku", "badge"] as const;
+      const unsetFields = clearableFields.filter((field) =>
+        Object.prototype.hasOwnProperty.call(updates, field) &&
+        (updates[field] === undefined || updates[field] === null || updates[field] === ""),
+      );
+      try {
+        return await callCloudFunction<Record<string, unknown>, Product>(
+          "updateCatalogProduct",
+          {
+            productId: id,
+            updates: sanitizeForFirestore(updates),
+            unsetFields,
+          },
+        );
+      } catch (err) {
+        console.error("Erreur modification produit Firestore:", err);
+        throw new Error(err instanceof Error ? err.message : "La modification n'a pas été enregistrée dans Firestore.");
       }
-      throw new Error("Firebase est sélectionné mais Firestore n'est pas disponible.");
     }
 
     const local = this.getLocalProducts();
