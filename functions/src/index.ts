@@ -12,7 +12,7 @@ import {
 } from "./productLogic.js";
 import {
   assertCategoryCanBeDeleted, assertCategorySlugChangeAllowed, assertCategorySlugIsUnique,
-  CategoryValidationError, validateCatalogCategory,
+  CategoryValidationError, validateCatalogCategory, type CatalogCategoryInput,
 } from "./categoryLogic.js";
 
 initializeApp();
@@ -131,7 +131,7 @@ export const createCatalogProduct = onCall({ region: "europe-west1", maxInstance
 
 export const createCatalogCategory = onCall({ region: "europe-west1", maxInstances: 5 }, async (request) => {
   requireOwner(request.auth);
-  let category;
+  let category: CatalogCategoryInput;
   try {
     category = validateCatalogCategory(request.data);
   } catch (error) {
@@ -140,13 +140,17 @@ export const createCatalogCategory = onCall({ region: "europe-west1", maxInstanc
 
   const categoryRef = db.collection("categories").doc();
   const duplicateQuery = db.collection("categories").where("slug", "==", category.slug).limit(1);
-  return db.runTransaction(async (transaction) => {
-    const duplicates = await transaction.get(duplicateQuery);
-    assertCategorySlugIsUnique(!duplicates.empty);
-    const record = { id: categoryRef.id, ...category, createdAt: new Date().toISOString() };
-    transaction.create(categoryRef, record);
-    return record;
-  });
+  try {
+    return await db.runTransaction(async (transaction) => {
+      const duplicates = await transaction.get(duplicateQuery);
+      assertCategorySlugIsUnique(!duplicates.empty);
+      const record = { id: categoryRef.id, ...category, createdAt: new Date().toISOString() };
+      transaction.create(categoryRef, record);
+      return record;
+    });
+  } catch (error) {
+    rethrowDomainError(error);
+  }
 });
 
 export const updateCatalogCategory = onCall({ region: "europe-west1", maxInstances: 5 }, async (request) => {
