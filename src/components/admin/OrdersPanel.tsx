@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Plus, RefreshCw, Search, ShoppingBag, X } from "lucide-react";
 import type { CustomerOrder, OrderItem, OrderStatus, Product } from "../../types";
-import { orderService } from "../../services/orderService";
+import { createOrderRequestId, orderService } from "../../services/orderService";
 import { formatFCFA } from "../../utils/formatters";
 
 const statusLabels: Record<OrderStatus, string> = {
@@ -35,11 +35,14 @@ export const OrdersPanel: React.FC<{ products: Product[]; onRefreshProducts: () 
   const [showForm, setShowForm] = useState(false);
   const [feeFor, setFeeFor] = useState<string | null>(null);
   const [fees, setFees] = useState<Record<string, string>>({});
+  const manualRequestIdRef = useRef<string | null>(null);
   const [form, setForm] = useState({
     source: "whatsapp" as "whatsapp" | "admin",
     customerName: "", customerPhone: "", city: "", address: "", notes: "",
     items: [{ productId: "", quantity: 1 }],
   });
+
+  const updateForm = (next: typeof form) => { manualRequestIdRef.current = null; setForm(next); };
 
   const load = async () => {
     setLoading(true);
@@ -72,10 +75,13 @@ export const OrdersPanel: React.FC<{ products: Product[]; onRefreshProducts: () 
         return { productId: product.id, productName: product.name, unitPrice: product.price, quantity: line.quantity };
       });
       if (!items.length) throw new Error("Ajoutez au moins un article.");
+      const requestId = manualRequestIdRef.current ?? createOrderRequestId();
+      manualRequestIdRef.current = requestId;
       await orderService.createManual({
         source: form.source, customerName: form.customerName, customerPhone: form.customerPhone,
         city: form.city, address: form.address, notes: form.notes, items,
-      });
+      }, requestId);
+      manualRequestIdRef.current = null;
       setShowForm(false);
       setForm({ source: "whatsapp", customerName: "", customerPhone: "", city: "", address: "", notes: "", items: [{ productId: "", quantity: 1 }] });
       await load();
@@ -123,13 +129,13 @@ export const OrdersPanel: React.FC<{ products: Product[]; onRefreshProducts: () 
   return <section className="space-y-5">
     <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div><p className="text-xs uppercase tracking-widest text-[#1769FF] font-bold">Gestion commerciale</p><h2 className="text-2xl font-bold text-[#101828]">Commandes</h2><p className="text-sm text-slate-500">Toutes les commandes, au même endroit · Paiement à la livraison</p></div>
-      <div className="flex gap-2"><button onClick={() => void load()} className="rounded-xl border border-slate-200 bg-white p-3 text-slate-600" aria-label="Actualiser"><RefreshCw className="w-4 h-4"/></button><button onClick={() => setShowForm(v => !v)} className="rounded-xl bg-[#1769FF] px-4 py-2.5 text-sm font-semibold text-white flex items-center gap-2"><Plus className="w-4 h-4"/> Nouvelle commande</button></div>
+      <div className="flex gap-2"><button onClick={() => void load()} className="rounded-xl border border-slate-200 bg-white p-3 text-slate-600" aria-label="Actualiser"><RefreshCw className="w-4 h-4"/></button><button onClick={() => { manualRequestIdRef.current = null; setShowForm(v => !v); }} className="rounded-xl bg-[#1769FF] px-4 py-2.5 text-sm font-semibold text-white flex items-center gap-2"><Plus className="w-4 h-4"/> Nouvelle commande</button></div>
     </header>
     {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
     {showForm && <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-3">
       <div className="flex justify-between"><h3 className="font-bold text-[#101828]">Saisie manuelle (WhatsApp / téléphone)</h3><button onClick={() => setShowForm(false)} aria-label="Fermer"><X className="w-4 h-4"/></button></div>
       <div className="grid sm:grid-cols-2 gap-3">
-        <input className="rounded-xl border p-3 text-sm" placeholder="Nom du client *" value={form.customerName} onChange={e => setForm({ ...form, customerName: e.target.value })}/>
+        <input className="rounded-xl border p-3 text-sm" placeholder="Nom du client *" value={form.customerName} onChange={e => updateForm({ ...form, customerName: e.target.value })}/>
         <input className="rounded-xl border p-3 text-sm" placeholder="Téléphone *" value={form.customerPhone} onChange={e => setForm({ ...form, customerPhone: e.target.value })}/>
         <input className="rounded-xl border p-3 text-sm" placeholder="Ville / quartier *" value={form.city} onChange={e => setForm({ ...form, city: e.target.value })}/>
         <input className="rounded-xl border p-3 text-sm" placeholder="Adresse de livraison" value={form.address} onChange={e => setForm({ ...form, address: e.target.value })}/>
