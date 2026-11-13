@@ -10,6 +10,10 @@ import {
 import {
   buildInitialStockMovement, ProductValidationError, validateCatalogProduct, type CatalogProductInput,
 } from "./productLogic.js";
+import {
+  assertCategoryCanBeDeleted, assertCategorySlugChangeAllowed, assertCategorySlugIsUnique,
+  CategoryValidationError, validateCatalogCategory,
+} from "./categoryLogic.js";
 
 initializeApp();
 const db = getFirestore();
@@ -20,6 +24,7 @@ const ORDER_STATUSES: OrderStatus[] = ["pending_confirmation", "confirmed", "pre
 
 function rethrowDomainError(error: unknown): never {
   if (error instanceof OrderValidationError) throw new HttpsError(error.code, error.message);
+  if (error instanceof CategoryValidationError) throw new HttpsError(error.code, error.message);
   throw error;
 }
 function requireOwner(auth: { uid: string; token: { email?: unknown; email_verified?: unknown } } | null | undefined): string {
@@ -50,13 +55,18 @@ async function createOrderWithIdempotency(input: {
   requestedItems: ReturnType<typeof normalizeRequestedItems>;
 }) {
   const orderRef = db.collection("orders").doc(input.requestId);
+  const requestFingerprint = createHash("sha256").update(JSON.stringify({
+    source: input.source,
+    customer: input.customer,
+    requestedItems: [...input.requestedItems].sort((a, b) => a.productId.localeCompare(b.productId)),
+  })).digest("hex");
   const now = new Date().toISOString();
   try {
     return await db.runTransaction(async (transaction) => {
       const existingSnapshot = await transaction.get(orderRef);
       if (existingSnapshot.exists) {
         const existing = existingSnapshot.data() as Record<string, unknown>;
-        if (isSameIdempotentOrder(existing, input.requestId)) {
+        if (isSameIdempotentOrder(existing, input.requestId, requestFingerprint)) {
           return { orderId: orderRef.id, orderNumber: String(existing.orderNumber ?? ""), subtotal: Number(existing.subtotal ?? 0), duplicate: true };
         }
         throw new HttpsError("already-exists", "Cette référence de commande est déjà utilisée.");
@@ -78,7 +88,7 @@ async function createOrderWithIdempotency(input: {
         }, { merge: true });
       }
       transaction.set(orderRef, {
-        orderNumber, idempotencyKey: input.requestId, source: input.source,
+        orderNumber, idempotencyKey: input.requestId, requestFingerprint, source: input.source,
         customerName: input.customer.customerName, customerPhone: input.customer.customerPhone,
         city: input.customer.city, address: input.customer.address, notes: input.customer.notes,
         items: orderItems, subtotal, deliveryFee: null, total: null,
@@ -116,6 +126,97 @@ export const createCatalogProduct = onCall({ region: "europe-west1", maxInstance
     }
     return record;
   });
+});
+
+
+export const createCatalogCategory = onCall({ region: "europe-west1", maxInstances: 5 }, async (request) => {
+  requireOwner(request.auth);
+  let category;
+  try {
+    category = validateCatalogCategory(request.data);
+  } catch (error) {
+    rethrowDomainError(error);
+  }
+
+  const categoryRef = db.collection("categories").doc();
+  const duplicateQuery = db.collection("categories").where("slug", "==", category.slug).limit(1);
+  return db.runTransaction(async (transaction) => {
+    const duplicates = await transaction.get(duplicateQuery);
+    assertCategorySlugIsUnique(!duplicates.empty);
+    const record = { id: categoryRef.id, ...category, createdAt: new Date().toISOString() };
+    transaction.create(categoryRef, record);
+    return record;
+  });
+});
+
+export const updateCatalogCategory = onCall({ region: "europe-west1", maxInstances: 5 }, async (request) => {
+  requireOwner(request.auth);
+  const categoryId = typeof request.data?.categoryId === "string" ? request.data.categoryId.trim() : "";
+  const updates = request.data?.updates;
+  if (!categoryId || categoryId.length > 150 || categoryId.includes("/") ||
+      !updates || typeof updates !== "object" || Array.isArray(updates)) {
+    throw new HttpsError("invalid-argument", "La référence ou les modifications de catégorie sont invalides.");
+  }
+
+  const categoryRef = db.collection("categories").doc(categoryId);
+  const now = new Date().toISOString();
+  try {
+    return await db.runTransaction(async (transaction) => {
+      const snapshot = await transaction.get(categoryRef);
+      if (!snapshot.exists) throw new HttpsError("not-found", "Catégorie introuvable.");
+      const current = snapshot.data()!;
+      const merged = validateCatalogCategory({
+        name: current.name,
+        slug: current.slug,
+        description: current.description ?? "",
+        icon: current.icon ?? "package",
+        ...(updates as Record<string, unknown>),
+      });
+
+      if (merged.slug !== current.slug) {
+        const productsQuery = db.collection("products").where("category", "==", current.slug).limit(1);
+        const duplicateQuery = db.collection("categories").where("slug", "==", merged.slug).limit(2);
+        const [assignedProducts, duplicates] = await Promise.all([
+          transaction.get(productsQuery),
+          transaction.get(duplicateQuery),
+        ]);
+        assertCategorySlugChangeAllowed(String(current.slug ?? ""), merged.slug, !assignedProducts.empty);
+        assertCategorySlugIsUnique(duplicates.docs.some((entry) => entry.id !== categoryId));
+      }
+
+      const record = { id: categoryId, ...merged, createdAt: current.createdAt ?? now, updatedAt: now };
+      transaction.set(categoryRef, record);
+      return record;
+    });
+  } catch (error) {
+    rethrowDomainError(error);
+  }
+});
+
+export const deleteCatalogCategory = onCall({ region: "europe-west1", maxInstances: 5 }, async (request) => {
+  requireOwner(request.auth);
+  const categoryId = typeof request.data?.categoryId === "string" ? request.data.categoryId.trim() : "";
+  if (!categoryId || categoryId.length > 150 || categoryId.includes("/")) {
+    throw new HttpsError("invalid-argument", "La référence de catégorie est invalide.");
+  }
+
+  const categoryRef = db.collection("categories").doc(categoryId);
+  try {
+    return await db.runTransaction(async (transaction) => {
+      const snapshot = await transaction.get(categoryRef);
+      if (!snapshot.exists) throw new HttpsError("not-found", "Catégorie introuvable.");
+      const slug = snapshot.data()?.slug;
+      if (typeof slug !== "string" || !slug) throw new HttpsError("failed-precondition", "L'identifiant de cette catégorie est invalide.");
+      const assignedProducts = await transaction.get(
+        db.collection("products").where("category", "==", slug).limit(1),
+      );
+      assertCategoryCanBeDeleted(!assignedProducts.empty);
+      transaction.delete(categoryRef);
+      return { categoryId, deleted: true };
+    });
+  } catch (error) {
+    rethrowDomainError(error);
+  }
 });
 
 export const deleteCatalogProduct = onCall({ region: "europe-west1", maxInstances: 5 }, async (request) => {
