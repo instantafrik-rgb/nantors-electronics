@@ -175,7 +175,7 @@ const ProductDetailContent: React.FC<{
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-20 w-10 h-10 bg-slate-100/90 hover:bg-[#2a2a2a] text-slate-900 rounded-full flex items-center justify-center shadow-md transition-all border border-slate-200 hover:scale-105 active:scale-95 cursor-pointer"
+          className="absolute top-4 right-4 z-20 w-10 h-10 bg-slate-100/90 hover:bg-slate-200 text-slate-900 rounded-full flex items-center justify-center shadow-md transition-all border border-slate-200 hover:scale-105 active:scale-95 cursor-pointer"
           aria-label="Fermer la fiche produit"
         >
           <X className="w-5 h-5" />
