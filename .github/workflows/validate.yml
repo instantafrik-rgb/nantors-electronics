@@ -26,6 +26,8 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - name: Generate web dependency lockfile
+        run: npm install --package-lock-only --ignore-scripts
       - name: Install web dependencies
         run: npm ci
       - name: TypeScript validation
