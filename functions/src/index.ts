@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { initializeApp } from "firebase-admin/app";
-import { getFirestore } from "firebase-admin/firestore";
+import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import {
   OrderValidationError, assertPaymentAllowed, assertStatusTransition, buildOrderItems,
@@ -24,6 +24,7 @@ const ORDER_STATUSES: OrderStatus[] = ["pending_confirmation", "confirmed", "pre
 
 function rethrowDomainError(error: unknown): never {
   if (error instanceof OrderValidationError) throw new HttpsError(error.code, error.message);
+  if (error instanceof ProductValidationError) throw new HttpsError("invalid-argument", error.message);
   if (error instanceof CategoryValidationError) throw new HttpsError(error.code, error.message);
   throw error;
 }
@@ -108,15 +109,19 @@ export const createCatalogProduct = onCall({ region: "europe-west1", maxInstance
   try {
     product = validateCatalogProduct(request.data);
   } catch (error) {
-    if (error instanceof ProductValidationError) throw new HttpsError("invalid-argument", error.message);
-    throw error;
+    rethrowDomainError(error);
   }
 
   const productRef = db.collection("products").doc(product.id);
   const now = new Date().toISOString();
   return db.runTransaction(async (transaction) => {
-    const existing = await transaction.get(productRef);
+    const categoryQuery = db.collection("categories").where("slug", "==", product.category).limit(1);
+    const [existing, categorySnapshot] = await Promise.all([
+      transaction.get(productRef),
+      transaction.get(categoryQuery),
+    ]);
     if (existing.exists) throw new HttpsError("already-exists", "Cette référence produit existe déjà.");
+    if (categorySnapshot.empty) throw new HttpsError("failed-precondition", "Choisissez une catégorie existante avant d'enregistrer le produit.");
     const record = { ...product, createdAt: now, updatedAt: now };
     transaction.create(productRef, record);
 
@@ -126,6 +131,58 @@ export const createCatalogProduct = onCall({ region: "europe-west1", maxInstance
     }
     return record;
   });
+});
+
+export const updateCatalogProduct = onCall({ region: "europe-west1", maxInstances: 5 }, async (request) => {
+  requireOwner(request.auth);
+  const productId = typeof request.data?.productId === "string" ? request.data.productId.trim() : "";
+  const updates = request.data?.updates;
+  const requestedUnsetFields = request.data?.unsetFields;
+  const clearableFields = ["categoryLabel", "originalPrice", "description", "lowStockThreshold", "sku", "badge"];
+  if (!productId || productId.length > 150 || productId.includes("/") ||
+      !updates || typeof updates !== "object" || Array.isArray(updates) ||
+      (requestedUnsetFields !== undefined && (!Array.isArray(requestedUnsetFields) ||
+        requestedUnsetFields.some((field: unknown) => typeof field !== "string" || !clearableFields.includes(field))))) {
+    throw new HttpsError("invalid-argument", "La référence ou les modifications du produit sont invalides.");
+  }
+  const updateRecord = updates as Record<string, unknown>;
+  const forbiddenFields = ["id", "createdAt", "updatedAt", "stockCount"];
+  if (Object.keys(updateRecord).some((field) => forbiddenFields.includes(field))) {
+    throw new HttpsError("failed-precondition", "La référence, la date de création et le stock ne peuvent pas être modifiés dans la fiche produit.");
+  }
+
+  const unsetFields = new Set<string>(requestedUnsetFields ?? []);
+  for (const field of clearableFields) {
+    if (Object.prototype.hasOwnProperty.call(updateRecord, field) &&
+        (updateRecord[field] === null || updateRecord[field] === "")) unsetFields.add(field);
+  }
+
+  const productRef = db.collection("products").doc(productId);
+  const now = new Date().toISOString();
+  try {
+    return await db.runTransaction(async (transaction) => {
+      const snapshot = await transaction.get(productRef);
+      if (!snapshot.exists) throw new HttpsError("not-found", "Produit introuvable.");
+      const current = snapshot.data()!;
+      const mergedInput: Record<string, unknown> = { ...current, ...updateRecord, id: productId };
+      for (const field of unsetFields) delete mergedInput[field];
+      const product = validateCatalogProduct(mergedInput);
+      if (product.stockCount !== current.stockCount) {
+        throw new HttpsError("failed-precondition", "Le stock doit être modifié depuis l'onglet Stock afin de conserver un historique fiable.");
+      }
+      const categoryQuery = db.collection("categories").where("slug", "==", product.category).limit(1);
+      const categorySnapshot = await transaction.get(categoryQuery);
+      if (categorySnapshot.empty) throw new HttpsError("failed-precondition", "La catégorie sélectionnée n'existe plus. Actualisez le catalogue.");
+      const patch: Record<string, unknown> = { ...product, updatedAt: now };
+      for (const field of unsetFields) patch[field] = FieldValue.delete();
+      transaction.update(productRef, patch);
+      const result: Record<string, unknown> = { ...current, ...product, updatedAt: now };
+      for (const field of unsetFields) delete result[field];
+      return result;
+    });
+  } catch (error) {
+    rethrowDomainError(error);
+  }
 });
 
 
