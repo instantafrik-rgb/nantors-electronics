@@ -128,8 +128,10 @@ export function assertPaymentAllowed(status: OrderStatus, paymentStatus: Payment
   if (typeof total !== "number" || !Number.isSafeInteger(total) || total < 0) throw new OrderValidationError("failed-precondition", "Le total de la commande doit être défini avant d'enregistrer le paiement.");
   return true;
 }
-export function isSameIdempotentOrder(existing: Record<string, unknown>, requestId: string): boolean {
-  return existing.idempotencyKey === requestId && ["website", "whatsapp", "admin"].includes(String(existing.source));
+export function isSameIdempotentOrder(existing: Record<string, unknown>, requestId: string, requestFingerprint: string): boolean {
+  return existing.idempotencyKey === requestId &&
+    existing.requestFingerprint === requestFingerprint &&
+    ["website", "whatsapp", "admin"].includes(String(existing.source));
 }
 
 
