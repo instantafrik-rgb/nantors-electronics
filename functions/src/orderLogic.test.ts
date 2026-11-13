@@ -20,8 +20,10 @@ test("valide les références idempotentes", () => {
   const id = "b7a5c4d2-1111-4222-8333-123456789abc";
   assert.equal(validateRequestId(id), id);
   assert.throws(() => validateRequestId("order-1"), OrderValidationError);
-  assert.equal(isSameIdempotentOrder({ idempotencyKey: id, source: "website" }, id), true);
-  assert.equal(isSameIdempotentOrder({ idempotencyKey: "other", source: "website" }, id), false);
+  const fingerprint = "a".repeat(64);
+  assert.equal(isSameIdempotentOrder({ idempotencyKey: id, requestFingerprint: fingerprint, source: "website" }, id, fingerprint), true);
+  assert.equal(isSameIdempotentOrder({ idempotencyKey: id, requestFingerprint: "b".repeat(64), source: "website" }, id, fingerprint), false);
+  assert.equal(isSameIdempotentOrder({ idempotencyKey: "other", requestFingerprint: fingerprint, source: "website" }, id, fingerprint), false);
 });
 test("relit les prix et le stock côté serveur pour créer l'instantané", () => {
   const items = buildOrderItems(normalizeRequestedItems([{ productId: "charger-1", quantity: 2 }]), products);
