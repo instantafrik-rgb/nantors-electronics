@@ -85,7 +85,7 @@ export const ContactPage: React.FC = () => {
   const waInquiryUrl = generateWhatsAppInquiryUrl();
 
   return (
-    <div className="nantor-contact-page py-12 md:py-20 bg-[#afbdc5] text-slate-900">
+    <div className="nantor-contact-page py-12 md:py-20 bg-[#f3f6f8] text-slate-900">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
         {/* Intro */}
         <div className="text-center max-w-2xl mx-auto space-y-3">
@@ -224,9 +224,9 @@ export const ContactPage: React.FC = () => {
                       href={whatsappUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#222222] hover:bg-[#2a2a2a] text-slate-900 text-xs font-semibold rounded-xl border border-slate-200 transition-colors"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#1769FF] hover:bg-[#0f56d9] text-white text-xs font-semibold rounded-xl border border-transparent transition-colors"
                     >
-                      <ExternalLink className="w-3.5 h-3.5 text-[#1769FF]" />
+                      <ExternalLink className="w-3.5 h-3.5 text-white" />
                       <span>Rouvrir WhatsApp manuellement</span>
                     </a>
                   </div>
@@ -303,7 +303,7 @@ export const ContactPage: React.FC = () => {
                 <div className="pt-2 border-t border-slate-100">
                   <button
                     onClick={() => setSubmissionStatus("idle")}
-                    className="px-4 py-2 bg-[#222222] hover:bg-[#2a2a2a] text-slate-900 text-xs font-semibold rounded-xl border border-slate-200 transition-colors cursor-pointer"
+                    className="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-xl border border-slate-200 transition-colors cursor-pointer"
                   >
                     Retour au formulaire
                   </button>
