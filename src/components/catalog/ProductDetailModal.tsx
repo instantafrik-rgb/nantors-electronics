@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   X,
   MessageSquare,
@@ -19,7 +19,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { Product } from '../../types';
-import { orderService } from '../../services/orderService';
+import { createOrderRequestId, orderService } from '../../services/orderService';
 import {
   formatFCFA,
   generateWhatsAppProductQuestionUrl,
@@ -58,6 +58,8 @@ const ProductDetailContent: React.FC<{
   const [customerAddress, setCustomerAddress] = useState('');
   const [orderBusy, setOrderBusy] = useState(false);
   const [orderError, setOrderError] = useState('');
+  const orderRequestIdRef = useRef<string | null>(null);
+  const invalidateOrderRequest = () => { orderRequestIdRef.current = null; };
 
   const images = product.images && product.images.length > 0
     ? product.images
@@ -72,8 +74,8 @@ const ProductDetailContent: React.FC<{
   // 3. Question WhatsApp
   const whatsappQuestionUrl = generateWhatsAppProductQuestionUrl(product);
 
-  const handleDecrease = () => setQuantity((prev) => Math.max(1, prev - 1));
-  const handleIncrease = () => setQuantity((prev) => Math.min(maxOrderQuantity, prev + 1));
+  const handleDecrease = () => { invalidateOrderRequest(); setQuantity((prev) => Math.max(1, prev - 1)); };
+  const handleIncrease = () => { invalidateOrderRequest(); setQuantity((prev) => Math.min(maxOrderQuantity, prev + 1)); };
 
   // 6. Circular image navigation
   const handlePrevImage = (e?: React.MouseEvent) => {
@@ -113,6 +115,8 @@ const ProductDetailContent: React.FC<{
     setOrderBusy(true);
     setOrderError('');
     try {
+      const requestId = orderRequestIdRef.current ?? createOrderRequestId();
+      orderRequestIdRef.current = requestId;
       const created = await orderService.createWebsite({
         customerName,
         customerPhone,
@@ -120,7 +124,7 @@ const ProductDetailContent: React.FC<{
         address: customerAddress,
         notes: customDeliveryNote,
         items: [{ productId: product.id, quantity }]
-      });
+      }, requestId);
       const details = `Commande ${created.orderNumber} · Client : ${customerName} · Téléphone : ${customerPhone} · Ville/quartier : ${customerCity} · Adresse : ${customerAddress} · ${customDeliveryNote}`;
       const messageUrl = generateWhatsAppOrderUrl(product, details, quantity);
       window.location.assign(messageUrl);
@@ -442,7 +446,7 @@ const ProductDetailContent: React.FC<{
                 <input
                   type="text"
                   value={customDeliveryNote}
-                  onChange={(e) => setCustomDeliveryNote(e.target.value)}
+                  onChange={(e) => { invalidateOrderRequest(); setCustomDeliveryNote(e.target.value); }}
                   placeholder="Ex : Lomé (Agoè, Hédzranawoé, Tokoin...) ou expédition en région (Kara, Sokodé...)"
                   className="w-full text-xs px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-900 focus:outline-none focus:border-[#1769FF] focus:ring-1 focus:ring-[#1769FF] placeholder:text-slate-400 transition-colors"
                 />
@@ -469,10 +473,10 @@ const ProductDetailContent: React.FC<{
                 <form onSubmit={handleWebsiteOrder} className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 text-slate-900">
                   <div><h4 className="font-semibold text-sm">Vos coordonnées de livraison</h4><p className="mt-1 text-xs text-slate-500">Votre demande sera enregistrée comme « À confirmer ». L'ouverture de WhatsApp ne confirme pas la commande.</p></div>
                   {orderError && <p role="alert" className="rounded-lg bg-red-50 p-2 text-xs text-red-700">{orderError}</p>}
-                  <input required minLength={2} maxLength={120} value={customerName} onChange={e=>setCustomerName(e.target.value)} placeholder="Nom complet *" className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm"/>
-                  <input required minLength={5} maxLength={30} value={customerPhone} onChange={e=>setCustomerPhone(e.target.value)} placeholder="Téléphone *" type="tel" className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm"/>
-                  <input required minLength={2} maxLength={120} value={customerCity} onChange={e=>setCustomerCity(e.target.value)} placeholder="Ville / quartier *" className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm"/>
-                  <input maxLength={300} value={customerAddress} onChange={e=>setCustomerAddress(e.target.value)} placeholder="Adresse / repère (facultatif)" className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm"/>
+                  <input required minLength={2} maxLength={120} value={customerName} onChange={e=>{ invalidateOrderRequest(); setCustomerName(e.target.value); }} placeholder="Nom complet *" className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm"/>
+                  <input required minLength={5} maxLength={30} value={customerPhone} onChange={e=>{ invalidateOrderRequest(); setCustomerPhone(e.target.value); }} placeholder="Téléphone *" type="tel" className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm"/>
+                  <input required minLength={2} maxLength={120} value={customerCity} onChange={e=>{ invalidateOrderRequest(); setCustomerCity(e.target.value); }} placeholder="Ville / quartier *" className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm"/>
+                  <input maxLength={300} value={customerAddress} onChange={e=>{ invalidateOrderRequest(); setCustomerAddress(e.target.value); }} placeholder="Adresse / repère (facultatif)" className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm"/>
                   <button disabled={orderBusy} type="submit" className="w-full rounded-xl bg-[#1769FF] px-4 py-3 text-sm font-bold text-white disabled:opacity-50">{orderBusy ? "Enregistrement…" : "Enregistrer et ouvrir WhatsApp"}</button>
                 </form>
               )}
