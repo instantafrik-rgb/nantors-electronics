@@ -2,7 +2,7 @@ import { getDb } from "./firebase";
 import { callCloudFunction } from "./cloudFunctions";
 import type { CustomerOrder, OrderItem, OrderStatus } from "../types";
 
-function createRequestId(): string {
+export function createOrderRequestId(): string {
   if (typeof crypto === "undefined" || typeof crypto.randomUUID !== "function") {
     throw new Error("Ce navigateur ne permet pas de sécuriser la référence de commande. Mettez-le à jour puis réessayez.");
   }
@@ -18,9 +18,9 @@ export const orderService = {
   async createWebsite(input: {
     customerName: string; customerPhone: string; city: string; address: string; notes: string;
     items: Array<{ productId: string; quantity: number }>;
-  }): Promise<{ orderId: string; orderNumber: string; subtotal: number; duplicate?: boolean }> {
+  }, requestId = createOrderRequestId()): Promise<{ orderId: string; orderNumber: string; subtotal: number; duplicate?: boolean }> {
     return callCloudFunction<typeof input & { requestId: string }, { orderId: string; orderNumber: string; subtotal: number; duplicate?: boolean }>(
-      "createWebsiteOrder", { ...input, requestId: createRequestId() },
+      "createWebsiteOrder", { ...input, requestId },
     );
   },
   async list(): Promise<CustomerOrder[]> {
@@ -32,7 +32,7 @@ export const orderService = {
   async createManual(input: {
     source: "whatsapp" | "admin"; customerName: string; customerPhone: string; city: string;
     address: string; items: OrderItem[]; notes: string;
-  }): Promise<void> {
+  }, requestId = createOrderRequestId()): Promise<void> {
     if (!input.customerName.trim() || !input.customerPhone.trim() || !input.city.trim() || !input.items.length) {
       throw new Error("Le nom, le téléphone, la ville/quartier et au moins un article sont obligatoires.");
     }
@@ -40,7 +40,7 @@ export const orderService = {
       throw new Error("La commande contient une référence ou une quantité invalide.");
     }
     await callCloudFunction("createManualOrder", {
-      requestId: createRequestId(), source: input.source,
+      requestId, source: input.source,
       customerName: input.customerName.trim(), customerPhone: input.customerPhone.trim(),
       city: input.city.trim(), address: input.address.trim(), notes: input.notes.trim(),
       items: input.items.map(({ productId, quantity }) => ({ productId, quantity })),
