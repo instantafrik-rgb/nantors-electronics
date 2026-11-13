@@ -104,10 +104,8 @@ service cloud.firestore {
 
       // La création initialise le stock et son mouvement dans une Cloud Function transactionnelle.
       allow create: if false;
-      // Les modifications de fiche sont réservées au propriétaire; le stock reste géré côté serveur.
-      allow update: if isSuperAdmin() &&
-        isValidProduct(request.resource.data) &&
-        request.resource.data.stockCount == resource.data.stockCount;
+      // Toutes les modifications de fiche passent par updateCatalogProduct (validation et catégorie vérifiée dans une transaction).
+      allow update: if false;
       // La suppression passe par une Cloud Function qui vérifie les commandes et mouvements historiques.
       allow delete: if false;
     }
