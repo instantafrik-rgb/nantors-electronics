@@ -390,3 +390,77 @@ html[data-theme="dark"] footer { background: #0b1220 !important; border-color: #
  .nantor-contact-page { padding:16px 14px 38px !important; }
  .nantor-contact-page > div > div:first-child { padding:23px; border-radius:22px; }
 }
+
+
+/* === Homepage v2: bright editorial hero with a real catalogue product === */
+.nantor-home { background:#eaf0f2; padding:clamp(16px,2.8vw,38px) clamp(14px,3.2vw,54px) 58px; }
+.nantor-home-shell { width:min(1600px,100%); display:flex; flex-direction:column; gap:22px; }
+.nantor-home-hero { min-height:clamp(390px,39vw,550px); position:relative; display:grid; grid-template-columns:1.02fr .98fr; overflow:hidden; isolation:isolate; border-radius:32px; background:linear-gradient(115deg,#fff 0%,#fff 52%,#f2f6f8 100%); box-shadow:0 18px 50px rgba(48,64,73,.07); }
+.nantor-home-hero-copy { position:relative; z-index:2; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; padding:clamp(30px,5vw,76px); }
+.nantor-home-hero-copy h1 { margin-top:23px; color:#192127; font-family:'Outfit',sans-serif; font-size:clamp(43px,5.4vw,76px); font-weight:650; line-height:.99; letter-spacing:-.067em; }
+.nantor-home-hero-copy h1 span { color:#1769ff; }
+.nantor-home-hero-copy > p { max-width:500px; margin-top:22px; color:#77858d; font-size:clamp(12px,1.1vw,15px); line-height:1.8; }
+.nantor-home-hero-actions { display:flex; align-items:center; flex-wrap:wrap; gap:17px; margin-top:27px; }
+.nantor-home-hero-actions > button { display:inline-flex; align-items:center; gap:11px; padding:14px 19px; border-radius:14px; background:#1769ff; color:#fff; font-size:12px; font-weight:750; box-shadow:0 9px 22px rgba(23,105,255,.19); transition:all .2s; }
+.nantor-home-hero-actions > button:hover { transform:translateY(-2px); background:#0f58df; box-shadow:0 13px 25px rgba(23,105,255,.24); }
+.nantor-home-hero-actions > a { display:inline-flex; align-items:center; gap:8px; color:#63727a; font-size:11px; font-weight:700; transition:color .2s; }
+.nantor-home-hero-actions > a:hover { color:#1769ff; }
+.nantor-home-hero-benefits { display:flex; flex-wrap:wrap; gap:12px 22px; margin-top:35px; padding-top:20px; border-top:1px solid #e9eef0; color:#74828a; font-size:10px; font-weight:700; }
+.nantor-home-hero-benefits span { display:inline-flex; align-items:center; gap:8px; }
+.nantor-home-hero-benefits svg { color:#1769ff; }
+.nantor-home-hero-visual { position:relative; min-width:0; display:flex; align-items:center; justify-content:center; overflow:hidden; background:radial-gradient(ellipse at 52% 48%,#fff 0%,#edf3f5 54%,#e4ecef 100%); }
+.nantor-hero-visual-glow { position:absolute; width:74%; aspect-ratio:1; border-radius:50%; border:1px solid rgba(23,105,255,.09); box-shadow:0 0 0 32px rgba(255,255,255,.3),0 0 0 72px rgba(255,255,255,.22); }
+.nantor-hero-visual-label { position:absolute; top:30px; right:32px; z-index:2; color:#9aa6ac; font-size:9px; font-weight:800; letter-spacing:.2em; }
+.nantor-home-hero-product { position:relative; z-index:1; width:88%; height:84%; display:grid; place-items:center; transition:transform .45s cubic-bezier(.2,.7,.2,1); }
+.nantor-home-hero-product:hover { transform:scale(1.035) rotate(-1deg); }
+.nantor-home-hero-product img { width:100%; height:100%; object-fit:contain; filter:drop-shadow(0 24px 24px rgba(41,58,69,.14)); mix-blend-mode:multiply; }
+.nantor-home-hero-placeholder { position:relative; z-index:1; width:220px; height:220px; display:grid; place-items:center; border-radius:50%; background:#fff; color:#1769ff; box-shadow:0 20px 55px rgba(30,50,60,.09); }
+.nantor-hero-product-chip { position:absolute; z-index:3; left:7%; right:7%; bottom:6%; display:flex; align-items:center; gap:12px; padding:14px 17px; border:1px solid rgba(255,255,255,.9); border-radius:17px; background:rgba(255,255,255,.88); backdrop-filter:blur(16px); box-shadow:0 12px 35px rgba(41,58,69,.09); text-align:left; transition:transform .2s,box-shadow .2s; }
+.nantor-hero-product-chip:hover { transform:translateY(-3px); box-shadow:0 17px 38px rgba(41,58,69,.13); }
+.nantor-hero-product-chip > span { display:flex; flex-direction:column; gap:4px; min-width:0; flex:1; }
+.nantor-hero-product-chip small { color:#89969d; font-size:8px; font-weight:800; letter-spacing:.14em; }
+.nantor-hero-product-chip strong { color:#202a30; font-size:12px; font-weight:750; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.nantor-hero-product-chip b { color:#1769ff; font-size:12px; white-space:nowrap; }
+.nantor-hero-product-chip > svg { color:#1769ff; flex-shrink:0; }
+.nantor-hero-vertical-note { position:absolute; right:17px; top:50%; writing-mode:vertical-rl; transform:translateY(-50%); color:#a5b0b5; font-size:8px; font-weight:800; letter-spacing:.22em; }
+.nantor-category-panel,.nantor-bestsellers-panel { border:1px solid rgba(255,255,255,.8); box-shadow:0 14px 40px rgba(48,64,73,.045); }
+.nantor-section-heading h2 { color:#1c252b; font-family:'Outfit',sans-serif; font-size:clamp(27px,3vw,39px); font-weight:650; letter-spacing:-.055em; line-height:1.08; }
+.nantor-section-heading h2 span { color:#1769ff; }
+.nantor-service-strip { grid-template-columns:repeat(3,1fr); gap:14px; padding:19px 26px; background:#f8fafb; border:1px solid #fff; }
+.nantor-service-strip div { justify-content:center; font-size:11px; }
+.nantor-service-strip svg { width:19px; height:19px; }
+.nantor-promo-card { background:#f5f8fa; color:#202a30; }
+.nantor-promo-card h2 { color:#202a30; }
+.nantor-promo-card h2 span { color:#1769ff; }
+.nantor-promo-card p,.nantor-promo-eyebrow { color:#78868e; }
+.nantor-promo-card button { background:#1769ff; color:white; }
+.nantor-promo-orbit { border-color:rgba(23,105,255,.1); box-shadow:0 0 0 28px rgba(23,105,255,.025),0 0 0 58px rgba(23,105,255,.02); }
+@media(max-width:850px) {
+ .nantor-home-hero { grid-template-columns:1fr 1fr; min-height:390px; }
+ .nantor-home-hero-copy { padding:28px; }
+ .nantor-home-hero-copy h1 { font-size:clamp(37px,6vw,55px); }
+ .nantor-home-hero-visual { min-height:390px; }
+ .nantor-hero-product-chip { left:5%; right:5%; padding:11px; }
+ .nantor-hero-product-chip b { font-size:10px; }
+}
+@media(max-width:600px) {
+ .nantor-home { padding:14px 12px 35px; }
+ .nantor-home-shell { gap:14px; }
+ .nantor-home-hero { grid-template-columns:1fr; border-radius:23px; }
+ .nantor-home-hero-copy { padding:27px 23px 15px; }
+ .nantor-home-hero-copy h1 { margin-top:16px; font-size:43px; }
+ .nantor-home-hero-copy > p { margin-top:13px; font-size:11px; }
+ .nantor-home-hero-actions { margin-top:18px; gap:12px; }
+ .nantor-home-hero-actions > button { padding:12px 14px; font-size:10px; }
+ .nantor-home-hero-actions > a { font-size:9px; }
+ .nantor-home-hero-benefits { margin-top:19px; padding-top:13px; gap:9px 14px; font-size:8px; }
+ .nantor-home-hero-visual { min-height:280px; }
+ .nantor-home-hero-product { width:78%; height:78%; }
+ .nantor-hero-visual-label { top:17px; right:18px; font-size:7px; }
+ .nantor-hero-product-chip { bottom:12px; left:16px; right:16px; padding:10px 12px; }
+ .nantor-hero-product-chip strong { font-size:10px; }
+ .nantor-hero-product-chip b { font-size:10px; }
+ .nantor-hero-vertical-note { display:none; }
+ .nantor-service-strip { grid-template-columns:1fr; padding:16px 18px; }
+ .nantor-service-strip div { justify-content:flex-start; }
+}
