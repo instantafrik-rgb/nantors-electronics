@@ -129,7 +129,10 @@ export default function App() {
       setProducts(loadedProds);
     } catch (err) {
       console.error("Erreur chargement données:", err);
-      setDataLoadError("Le catalogue ne peut pas être chargé depuis la source configurée. Vérifiez la connexion Firebase et les règles Firestore. Aucune commande ne sera enregistrée localement.");
+      const detail = err instanceof Error && err.message.trim()
+        ? err.message
+        : "Le catalogue ne peut pas être chargé depuis la source configurée. Vérifiez Firebase et les règles Firestore.";
+      setDataLoadError(`${detail} Aucune commande ne sera enregistrée localement.`);
     } finally {
       setLoading(false);
     }
@@ -140,15 +143,20 @@ export default function App() {
     let unsubscribe: (() => void) | undefined;
     loadData();
 
+    const handleAuthChange = (user: AdminUser | null) => {
+      if (cancelled) return;
+      const isSuperAdmin = authService.isCurrentFirebaseUserSuperAdmin();
+      setCurrentUser(user);
+      if (!isSuperAdmin) setActivePage((prev) => (prev === "admin" ? "home" : prev));
+      // Reload the catalog on sign-in/sign-out so the owner sees hidden products,
+      // while public visitors continue to receive only available products.
+      void loadData();
+    };
+
     const shouldInitAuth = window.location.hash.includes("admin");
     const subscribeToAuth = () => {
       if (cancelled) return;
-      unsubscribe = authService.subscribe((user) => {
-        const isSuperAdmin = authService.isCurrentFirebaseUserSuperAdmin();
-        setCurrentUser(user);
-        if (!isSuperAdmin) setActivePage((prev) => (prev === "admin" ? "home" : prev));
-        loadData();
-      });
+      unsubscribe = authService.subscribe(handleAuthChange);
     };
 
     if (shouldInitAuth) {
@@ -156,7 +164,7 @@ export default function App() {
         console.error("Initialisation Firebase Auth impossible:", error);
       });
     } else {
-      unsubscribe = authService.subscribe((user) => setCurrentUser(user));
+      unsubscribe = authService.subscribe(handleAuthChange);
     }
 
     return () => {
