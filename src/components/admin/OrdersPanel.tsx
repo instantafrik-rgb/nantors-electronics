@@ -133,28 +133,28 @@ export const OrdersPanel: React.FC<{ products: Product[]; onRefreshProducts: () 
     </header>
     {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
     {showForm && <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-3">
-      <div className="flex justify-between"><h3 className="font-bold text-[#101828]">Saisie manuelle (WhatsApp / téléphone)</h3><button onClick={() => setShowForm(false)} aria-label="Fermer"><X className="w-4 h-4"/></button></div>
+      <div className="flex justify-between"><h3 className="font-bold text-[#101828]">Saisie manuelle (WhatsApp / téléphone)</h3><button onClick={() => { manualRequestIdRef.current = null; setShowForm(false); }} aria-label="Fermer"><X className="w-4 h-4"/></button></div>
       <div className="grid sm:grid-cols-2 gap-3">
         <input className="rounded-xl border p-3 text-sm" placeholder="Nom du client *" value={form.customerName} onChange={e => updateForm({ ...form, customerName: e.target.value })}/>
-        <input className="rounded-xl border p-3 text-sm" placeholder="Téléphone *" value={form.customerPhone} onChange={e => setForm({ ...form, customerPhone: e.target.value })}/>
-        <input className="rounded-xl border p-3 text-sm" placeholder="Ville / quartier *" value={form.city} onChange={e => setForm({ ...form, city: e.target.value })}/>
-        <input className="rounded-xl border p-3 text-sm" placeholder="Adresse de livraison" value={form.address} onChange={e => setForm({ ...form, address: e.target.value })}/>
-        <select className="rounded-xl border p-3 text-sm" value={form.source} onChange={e => setForm({ ...form, source: e.target.value as "whatsapp" | "admin" })}><option value="whatsapp">WhatsApp</option><option value="admin">Téléphone / autre</option></select>
+        <input className="rounded-xl border p-3 text-sm" placeholder="Téléphone *" value={form.customerPhone} onChange={e => updateForm({ ...form, customerPhone: e.target.value })}/>
+        <input className="rounded-xl border p-3 text-sm" placeholder="Ville / quartier *" value={form.city} onChange={e => updateForm({ ...form, city: e.target.value })}/>
+        <input className="rounded-xl border p-3 text-sm" placeholder="Adresse de livraison" value={form.address} onChange={e => updateForm({ ...form, address: e.target.value })}/>
+        <select className="rounded-xl border p-3 text-sm" value={form.source} onChange={e => updateForm({ ...form, source: e.target.value as "whatsapp" | "admin" })}><option value="whatsapp">WhatsApp</option><option value="admin">Téléphone / autre</option></select>
         <div className="sm:col-span-2 space-y-2">
-          <div className="flex items-center justify-between"><span className="text-xs font-semibold text-slate-600">Articles de la commande</span><button type="button" disabled={form.items.length >= 20} onClick={() => setForm({ ...form, items: [...form.items, { productId: "", quantity: 1 }] })} className="text-xs font-semibold text-[#1769FF] disabled:opacity-40">+ Ajouter un article</button></div>
+          <div className="flex items-center justify-between"><span className="text-xs font-semibold text-slate-600">Articles de la commande</span><button type="button" disabled={form.items.length >= 20} onClick={() => updateForm({ ...form, items: [...form.items, { productId: "", quantity: 1 }] })} className="text-xs font-semibold text-[#1769FF] disabled:opacity-40">+ Ajouter un article</button></div>
           {form.items.map((line, index) => {
             const selected = products.find(p => p.id === line.productId);
             return <div key={index} className="grid grid-cols-[1fr_100px_auto] gap-2">
-              <select className="min-w-0 rounded-xl border p-3 text-sm" value={line.productId} onChange={e => setForm({ ...form, items: form.items.map((item, i) => i === index ? { ...item, productId: e.target.value } : item) })}>
+              <select className="min-w-0 rounded-xl border p-3 text-sm" value={line.productId} onChange={e => updateForm({ ...form, items: form.items.map((item, i) => i === index ? { ...item, productId: e.target.value } : item) })}>
                 <option value="">Sélectionner un produit *</option>
                 {products.filter(availableForOrder).map(p => <option key={p.id} value={p.id}>{p.name} — {formatFCFA(p.price)} · Stock {p.stockCount}</option>)}
               </select>
-              <input aria-label="Quantité" type="number" min="1" max={selected?.stockCount ?? 50} className="w-full rounded-xl border p-3 text-sm" value={line.quantity} onChange={e => setForm({ ...form, items: form.items.map((item, i) => i === index ? { ...item, quantity: Number(e.target.value) } : item) })}/>
-              <button type="button" aria-label="Supprimer la ligne" disabled={form.items.length === 1} onClick={() => setForm({ ...form, items: form.items.filter((_, i) => i !== index) })} className="rounded-xl border px-3 text-slate-500 disabled:opacity-30">×</button>
+              <input aria-label="Quantité" type="number" min="1" max={selected?.stockCount ?? 50} className="w-full rounded-xl border p-3 text-sm" value={line.quantity} onChange={e => updateForm({ ...form, items: form.items.map((item, i) => i === index ? { ...item, quantity: Number(e.target.value) } : item) })}/>
+              <button type="button" aria-label="Supprimer la ligne" disabled={form.items.length === 1} onClick={() => updateForm({ ...form, items: form.items.filter((_, i) => i !== index) })} className="rounded-xl border px-3 text-slate-500 disabled:opacity-30">×</button>
             </div>;
           })}
         </div>
-        <input className="rounded-xl border p-3 text-sm sm:col-span-2" placeholder="Note interne" value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })}/>
+        <input className="rounded-xl border p-3 text-sm sm:col-span-2" placeholder="Note interne" value={form.notes} onChange={e => updateForm({ ...form, notes: e.target.value })}/>
       </div>
       <p className="text-xs text-slate-500">La commande reste « À confirmer ». Les prix et le stock sont relus côté serveur. Aucun stock n'est retiré avant confirmation. Les frais de livraison seront ajoutés séparément.</p>
       <button disabled={busy} onClick={() => void create()} className="rounded-xl bg-[#101828] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{busy ? "Enregistrement…" : "Enregistrer la commande"}</button>
