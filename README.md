@@ -43,33 +43,41 @@ Variables Cloudinary pour les photos produits :
 
 Sans Firebase configuré, le catalogue peut fonctionner en mode local de démonstration. Les commandes, l'inventaire et les données synchronisées exigent Firestore. Le mode local n'est pas une sauvegarde cloud.
 
-## Firebase
+## Firebase et isolation staging
 
-Le projet Firebase par défaut est défini dans `.firebaserc`. Vérifier qu'il s'agit bien du projet voulu avant tout déploiement.
+Le projet de production est identifié par l'alias explicite `production` dans `.firebaserc`; aucun projet Firebase n'est défini comme cible par défaut. **Ne déployez jamais les règles ou fonctions de cette branche sur le projet de production.**
 
-1. Activer Firebase Authentication avec Google.
-2. Conserver le même compte propriétaire autorisé dans `src/config/environment.ts`, `firestore.rules` et `functions/src/index.ts` (actuellement `instantafrik@gmail.com`).
-3. Configurer les variables Firebase dans l'environnement de déploiement.
-4. Vérifier les règles et compiler/tester les Cloud Functions :
+La configuration Vercel consultée comporte six variables `VITE_FIREBASE_*` communes aux environnements Preview et Production. Tant que Preview n'est pas isolé sur un projet Firebase distinct, toute modification de règles ou de fonctions pourrait affecter le site officiel. Le diagnostic de prévisualisation indique par ailleurs des lectures Firestore refusées (`permission-denied`).
+
+Procédure sûre avant tout test fonctionnel :
+
+1. Le propriétaire crée un projet Firebase de staging distinct (par exemple `nantors-electronics-staging`) et active Authentication avec Google ainsi que Firestore.
+2. Le propriétaire vérifie que le plan Firebase permet l'exécution des Cloud Functions (plan Blaze requis pour ce déploiement).
+3. Dans Vercel, renseigner **uniquement pour Preview** les six variables `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID`, `VITE_FIREBASE_STORAGE_BUCKET`, `VITE_FIREBASE_MESSAGING_SENDER_ID` et `VITE_FIREBASE_APP_ID` avec la configuration Web du projet staging. Ne pas modifier les variables Production.
+4. Vérifier l'identifiant du projet staging avant déploiement (`firebase projects:list`), puis déployer explicitement vers cet identifiant :
 
 ```bash
-cd functions
+firebase deploy --only firestore:rules,functions --project YOUR_STAGING_PROJECT_ID
+```
+
+5. Les fonctions sont configurées pour Node.js 22. Les contrôles locaux/CI à exécuter dans `functions` sont :
+
+```bash
 npm install --package-lock-only --ignore-scripts
 npm ci
 npm run build
 npm test
-cd ..
 ```
 
-5. Déployer les règles Firestore et l'ensemble des fonctions serveur :
+Les fonctions comprennent notamment `createWebsiteOrder` (prix et disponibilité recalculés côté serveur), `createManualOrder`, les opérations de catalogue, `setOrderDeliveryFee`, `updateOrderStatus`, `markOrderPaid` et `adjustInventoryStock`. Les écritures de commandes et les mouvements de stock sont transactionnels. Les commandes et coordonnées clients restent privées au compte propriétaire.
 
-```bash
-firebase deploy --only firestore:rules,functions
-```
+### App Check, WhatsApp et Cloudinary
 
-Les fonctions comprennent notamment `createWebsiteOrder` (demande web recalculée côté serveur), `createManualOrder`, `createCatalogProduct`, `updateCatalogProduct`, `deleteCatalogProduct`, `createCatalogCategory`, `updateCatalogCategory`, `deleteCatalogCategory`, `setOrderDeliveryFee`, `updateOrderStatus`, `markOrderPaid` et `adjustInventoryStock`. Les créations/modifications/suppressions de produits et catégories, les commandes et les mouvements de stock passent par des fonctions serveur; les contrôles de catégorie et de stock sont transactionnels.
+- App Check : configurer reCAPTCHA v3 ou Enterprise dans le projet Firebase staging, autoriser le domaine exact de la prévisualisation et définir `VITE_FIREBASE_APPCHECK_SITE_KEY` **dans Preview uniquement**. La fonction publique `createWebsiteOrder` utilise encore `enforceAppCheck: false`; activer `true` après validation du jeton sur staging, puis redéployer les fonctions sur staging.
+- WhatsApp : `VITE_WHATSAPP_NUMBER` n'est pas présent dans Vercel. Le numéro commercial peut être enregistré dans **Espace propriétaire → Paramètres → Coordonnées** une fois Firestore staging opérationnel, ou dans une variable Preview.
+- Cloudinary : les variables Preview actuelles utilisent le cloud `pgjikefb`, le preset `nantors_products` et le dossier `nantors-electronics/products`. Avant les tests d'upload, le propriétaire doit confirmer que le preset Unsigned existe et qu'il limite les formats, la taille et le dossier autorisés. Utiliser un dossier/preset de staging distinct pour ne pas mélanger les photos de test avec celles de la boutique réelle.
 
-Les règles Firestore gardent les commandes et les mouvements de stock privés au compte administrateur. Les écritures publiques de commandes passent par la fonction serveur, jamais par un accès Firestore direct du navigateur.
+Ne pas importer automatiquement les données `INITIAL_PRODUCTS` : elles sont des exemples locaux. Le propriétaire doit choisir et valider les données produits/catégories à copier vers staging.
 
 ## Déploiement Vercel
 
@@ -79,7 +87,7 @@ Le projet utilise Vite avec :
 - Répertoire de sortie : `dist`
 - Version Node : 22.x
 
-Ajouter les variables d'environnement Firebase, Cloudinary, WhatsApp et administrateur dans les environnements Preview et Production de Vercel. Ne jamais inscrire de valeurs secrètes dans le dépôt Git.
+Configurer les variables Firebase de **Preview** sur le projet staging uniquement. Conserver les variables Production inchangées. Les variables Cloudinary Preview doivent utiliser un dossier/preset de staging. Ne jamais inscrire de valeurs secrètes dans le dépôt Git.
 
 Les modifications de travail sont développées sur la branche `redesign/admin-premium`. Ne pas fusionner vers `main` ni promouvoir une prévisualisation en production sans validation explicite du propriétaire.
 
@@ -109,20 +117,19 @@ Les modifications de travail sont développées sur la branche `redesign/admin-p
 
 ## Contrôles à terminer avant toute mise en production
 
-La prévisualisation Vercel et la compilation ne prouvent pas que les services Firebase ont été déployés ou testés avec les données réelles. Avant d'ouvrir la nouvelle version aux clients :
+La prévisualisation Vercel et la compilation ne prouvent pas que les services Firebase ont été déployés ou testés avec les données réelles. La prévisualisation doit d'abord être isolée de la base de production.
 
-1. Vérifier dans Vercel que les six variables `VITE_FIREBASE_*` sont renseignées pour Preview et Production. Elles sont présentes dans la configuration consultée pour ce projet.
-2. Renseigner le numéro commercial dans **Espace propriétaire → Paramètres → Coordonnées** (indicatif pays inclus, chiffres uniquement), ou ajouter `VITE_WHATSAPP_NUMBER` aux variables Vercel puis redéployer. Le numéro n'était pas présent dans la liste des variables Vercel consultée; tant qu'il manque, le formulaire de commande en ligne reste bloqué volontairement.
-3. Vérifier que Firebase Authentication avec Google et Firestore sont activés, que le compte propriétaire autorisé est bien `instantafrik@gmail.com`, et que les vraies fiches produits/catégories sont présentes dans Firestore. Les données `INITIAL_PRODUCTS` sont uniquement des données locales de démonstration et ne sont pas importées automatiquement.
-4. Depuis un environnement connecté au bon projet Firebase, vérifier que Firestore Database existe et que le projet est sur le plan Blaze (requis pour Cloud Functions), puis depuis la branche `redesign/admin-premium` exécuter `firebase use nantors-electronics` et `firebase deploy --only firestore:rules,functions`. Ce déploiement Firebase n'est pas effectué par Vercel. Les règles de cette branche autorisent la lecture publique des catégories et produits disponibles, mais réservent les écritures de catalogue aux fonctions transactionnelles.
-5. Configurer Firebase App Check pour l'application Web avec reCAPTCHA v3 ou Enterprise. Ajouter la clé publique dans la variable Vercel Preview `VITE_FIREBASE_APPCHECK_SITE_KEY`, autoriser le domaine exact de la prévisualisation dans Firebase Console, puis vérifier l'initialisation depuis **Espace propriétaire → Statut Système & Clés**. Le client initialise App Check dès que cette variable est présente. **La fonction publique `createWebsiteOrder` utilise encore `enforceAppCheck: false`** : après validation du jeton sur la prévisualisation, activer `enforceAppCheck: true` dans `functions/src/index.ts`, redéployer les fonctions, puis retester. Ne pas déclarer la production prête avant cette étape.
-6. Dans Cloudinary, vérifier que le cloud `pgjikefb` possède bien le preset `nantors_products` en mode **Unsigned** et que les uploads arrivent dans `nantors-electronics/products`. Les trois variables Cloudinary publiques sont maintenant définies uniquement pour la prévisualisation Vercel de cette branche; aucun secret Cloudinary n'est stocké dans le dépôt.
-7. Dans **Espace propriétaire → Paramètres → Coordonnées**, renseigner et enregistrer le numéro WhatsApp commercial au format international. Le numéro n'est pas inclus dans la configuration Vercel consultée; le réglage Firestore est la source prévue.
-8. Après déploiement des règles, vérifier que les collections `categories` et `products` contiennent les vraies données. Les données `INITIAL_PRODUCTS` sont des exemples locaux uniquement et ne sont jamais importées automatiquement. Ne pas importer les exemples dans la boutique réelle sans validation du propriétaire.
-9. Tester avec le compte propriétaire une commande réelle de bout en bout sur la prévisualisation : création Firestore, ouverture WhatsApp, saisie des frais, confirmation avec déduction de stock, livraison, paiement, puis annulation d'une autre commande confirmée pour vérifier la restitution.
+1. Créer un projet Firebase staging distinct, activer Google Authentication et Firestore, puis vérifier le plan Blaze pour Cloud Functions.
+2. Dans Vercel, remplacer les six variables `VITE_FIREBASE_*` **pour Preview uniquement** par les valeurs du projet staging. Les entrées actuelles sont partagées entre Preview et Production : ne pas modifier ni déployer de règles sur le projet de production.
+3. Déployer `firestore.rules` et les Cloud Functions explicitement vers le projet staging avec `firebase deploy --only firestore:rules,functions --project YOUR_STAGING_PROJECT_ID`. Vérifier l'identifiant avant d'exécuter la commande.
+4. Configurer App Check sur staging, ajouter le domaine de prévisualisation et renseigner `VITE_FIREBASE_APPCHECK_SITE_KEY` dans Preview. Après vérification du jeton, passer `enforceAppCheck` à `true` pour `createWebsiteOrder` et redéployer uniquement sur staging.
+5. Vérifier que le preset Cloudinary `nantors_products` existe en mode Unsigned et restreindre formats, taille et dossier. Utiliser un dossier de staging distinct des photos réelles; les variables Cloudinary actuelles de Preview pointent vers `nantors-electronics/products`.
+6. Renseigner le numéro WhatsApp commercial dans **Espace propriétaire → Paramètres → Coordonnées** sur staging, ou ajouter `VITE_WHATSAPP_NUMBER` dans Preview. Il est absent des variables Vercel consultées et le formulaire de commande reste bloqué tant qu'il n'est pas configuré.
+7. Copier uniquement les vraies catégories et fiches produits que le propriétaire souhaite tester. Ne jamais importer les données locales `INITIAL_PRODUCTS` dans Firestore réel sans validation.
+8. Tester sur staging avec des coordonnées fictives : création Firestore, ouverture WhatsApp, saisie des frais, confirmation et déduction de stock, livraison, paiement, puis annulation d'une autre commande confirmée pour vérifier la restitution.
+9. Après validation, demander une approbation explicite avant toute migration vers Firebase Production, modification des variables Production, fusion vers `main`, promotion Vercel ou changement du domaine officiel.
 
 Ne pas fusionner `redesign/admin-premium`, promouvoir la prévisualisation ni modifier le domaine public sans validation explicite du propriétaire.
-
 
 ## Diagnostic de la prévisualisation (13 novembre 2026)
 
