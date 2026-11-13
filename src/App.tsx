@@ -486,7 +486,7 @@ export default function App() {
   const isSuperAdmin = authService.isCurrentFirebaseUserSuperAdmin();
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#afbdc5] text-slate-900 selection:bg-[#1769FF] selection:text-white">
+    <div className="min-h-screen flex flex-col bg-[#f3f6f8] text-slate-900 selection:bg-[#1769FF] selection:text-white">
       {/* Universal Top Header */}
       <Header
         activePage={activePage}
@@ -540,7 +540,7 @@ export default function App() {
 
             <section
               id="catalog"
-              className="scroll-mt-28 md:scroll-mt-32 border-t border-[#222222]"
+              className="scroll-mt-28 md:scroll-mt-32 border-t border-[#e5eaee]"
             >
               <CatalogPage
                 products={publicFilteredProducts}
@@ -563,14 +563,14 @@ export default function App() {
 
             <section
               id="about"
-              className="scroll-mt-28 md:scroll-mt-32 border-t border-[#222222]"
+              className="scroll-mt-28 md:scroll-mt-32 border-t border-[#e5eaee]"
             >
               <AboutPage onExploreCatalog={() => handleNavigate("catalog")} />
             </section>
 
             <section
               id="contact"
-              className="scroll-mt-28 md:scroll-mt-32 border-t border-[#222222]"
+              className="scroll-mt-28 md:scroll-mt-32 border-t border-[#e5eaee]"
             >
               <ContactPage />
             </section>
