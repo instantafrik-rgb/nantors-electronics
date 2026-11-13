@@ -272,7 +272,7 @@ html[data-theme="dark"] footer { background: #0b1220 !important; border-color: #
 .nantor-catalog-products .group button:not(:disabled):hover { background:#0d55dc; }
 .nantor-catalog-products .group h3 { font-size:14px; }
 .nantor-catalog-products .group .font-mono { color:#1769ff; font-family:'Outfit',sans-serif; font-weight:750; }
-.nantor-catalog-products .group .text-\\[\\#aaaaaa\\] { color:#89949a; }
+.nantor-catalog-products .group [class~="text-[#aaaaaa]"] { color:#89949a; }
 @media(max-width:1100px) {
  .nantor-catalog-products { grid-template-columns:repeat(3,minmax(0,1fr)); }
  .nantor-header-main { gap:15px; }
@@ -361,7 +361,7 @@ html[data-theme="dark"] footer { background: #0b1220 !important; border-color: #
 .nantor-contact-page > div > div:first-child p { max-width:630px; margin-top:10px; }
 .nantor-contact-page .shadow-2xl { box-shadow:0 14px 38px rgba(48,64,73,.055); }
 .nantor-contact-page .rounded-3xl { border-radius:24px; }
-.nantor-contact-page .bg-\\[\\#1769FF\\] { background:#1769ff; }
+.nantor-contact-page [class~="bg-[#1769FF]"] { background:#1769ff; }
 .nantor-footer { padding-top:48px; background:#fff; }
 .nantor-footer > div:first-child { padding-bottom:35px; margin-bottom:35px; }
 .nantor-footer > div:last-child { padding-top:20px; }
