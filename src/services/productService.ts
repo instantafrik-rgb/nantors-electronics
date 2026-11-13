@@ -344,7 +344,7 @@ class ProductService {
 
   public async createCategory(input: Omit<CategoryInfo, "id">): Promise<CategoryInfo> {
     if (this.dataSource === "firebase") {
-      return callCloudFunction<Omit<CategoryInfo, "id">, CategoryInfo>(
+      return callCloudFunction<Record<string, unknown>, CategoryInfo>(
         "createCatalogCategory",
         sanitizeForFirestore(input),
       );
