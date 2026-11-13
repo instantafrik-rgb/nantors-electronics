@@ -118,7 +118,8 @@ service cloud.firestore {
     match /categories/{categoryId} {
       // Lecture publique autorisée pour l'arborescence du catalogue
       allow read: if true;
-      allow create, update, delete: if isSuperAdmin();
+      // Category writes are transactional Cloud Functions only (slug uniqueness / product assignment checks).
+      allow create, update, delete: if false;
     }
 
     // -------------------------------------------------------------
