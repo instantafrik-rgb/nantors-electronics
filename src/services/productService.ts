@@ -343,59 +343,62 @@ class ProductService {
   }
 
   public async createCategory(input: Omit<CategoryInfo, "id">): Promise<CategoryInfo> {
-    const category: CategoryInfo = { ...input, id: `cat-${Date.now()}-${Math.random().toString(36).slice(2, 6)}` };
     if (this.dataSource === "firebase") {
-      const db = await getDb();
-      if (!db) throw new Error("Firestore n'est pas disponible.");
-      const { doc, setDoc } = await import("firebase/firestore");
-      await setDoc(doc(db, "categories", category.id), category);
-      return category;
+      return callCloudFunction<Omit<CategoryInfo, "id">, CategoryInfo>(
+        "createCatalogCategory",
+        sanitizeForFirestore(input),
+      );
     }
+
+    const category: CategoryInfo = { ...input, id: `cat-${Date.now()}-${Math.random().toString(36).slice(2, 6)}` };
     const categories = await this.getCategories();
+    if (categories.some((entry) => entry.slug === category.slug)) {
+      throw new Error("Cet identifiant de catégorie est déjà utilisé.");
+    }
     localStorage.setItem(LOCAL_STORAGE_CATEGORIES_KEY, JSON.stringify([...categories, category]));
     return category;
   }
 
   public async updateCategory(id: string, updates: Partial<CategoryInfo>): Promise<void> {
+    if (this.dataSource === "firebase") {
+      await callCloudFunction("updateCatalogCategory", {
+        categoryId: id,
+        updates: sanitizeForFirestore(updates),
+      });
+      return;
+    }
+
     const categories = await this.getCategories();
     const existing = categories.find((category) => category.id === id);
     if (!existing) throw new Error("Catégorie introuvable.");
-
-    if (updates.slug && updates.slug !== existing.slug) {
+    const merged = { ...existing, ...updates };
+    if (merged.slug !== existing.slug && categories.some((entry) => entry.id !== id && entry.slug === merged.slug)) {
+      throw new Error("Cet identifiant de catégorie est déjà utilisé.");
+    }
+    if (merged.slug !== existing.slug) {
       const products = await this.getProducts({}, true);
       if (products.some((product) => product.category === existing.slug)) {
         throw new Error("Cette catégorie contient encore des produits. Réaffectez-les avant de modifier son identifiant.");
       }
     }
-
-    if (this.dataSource === "firebase") {
-      const db = await getDb();
-      if (!db) throw new Error("Firestore n'est pas disponible.");
-      const { doc, updateDoc } = await import("firebase/firestore");
-      await updateDoc(doc(db, "categories", id), updates);
-      return;
-    }
-
     const index = categories.findIndex((category) => category.id === id);
-    categories[index] = { ...categories[index], ...updates };
+    categories[index] = merged;
     localStorage.setItem(LOCAL_STORAGE_CATEGORIES_KEY, JSON.stringify(categories));
   }
 
   public async deleteCategory(id: string): Promise<void> {
-    const category = (await this.getCategories()).find((item) => item.id === id);
+    if (this.dataSource === "firebase") {
+      await callCloudFunction("deleteCatalogCategory", { categoryId: id });
+      return;
+    }
+
+    const categories = await this.getCategories();
+    const category = categories.find((item) => item.id === id);
     if (!category) throw new Error("Catégorie introuvable.");
     const products = await this.getProducts({}, true);
     if (products.some((product) => product.category === category.slug)) {
       throw new Error("Cette catégorie contient encore des produits. Réaffectez-les avant de la supprimer.");
     }
-    if (this.dataSource === "firebase") {
-      const db = await getDb();
-      if (!db) throw new Error("Firestore n'est pas disponible.");
-      const { doc, deleteDoc } = await import("firebase/firestore");
-      await deleteDoc(doc(db, "categories", id));
-      return;
-    }
-    const categories = await this.getCategories();
     localStorage.setItem(LOCAL_STORAGE_CATEGORIES_KEY, JSON.stringify(categories.filter((item) => item.id !== id)));
   }
 
