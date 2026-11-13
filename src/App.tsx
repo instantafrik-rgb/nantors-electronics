@@ -147,7 +147,11 @@ export default function App() {
       if (cancelled) return;
       const isSuperAdmin = authService.isCurrentFirebaseUserSuperAdmin();
       setCurrentUser(user);
-      if (!isSuperAdmin) setActivePage((prev) => (prev === "admin" ? "home" : prev));
+      if (!isSuperAdmin) {
+        setActivePage((prev) => (prev === "admin" ? "home" : prev));
+      } else if (window.location.hash.replace(/^#\/?/, "").trim() === "admin") {
+        setActivePage("admin");
+      }
       // Reload the catalog on sign-in/sign-out so the owner sees hidden products,
       // while public visitors continue to receive only available products.
       void loadData();
